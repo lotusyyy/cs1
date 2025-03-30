@@ -359,7 +359,6 @@ int isblocked(struct world_t *world, int x1, int y1, int x2, int y2) {
 
     for (int row = 0; row < ROWS; row++) {
         for (int col = 0; col < COLS; col++) {
-            double distance = sqrt(pow(row - world->player_row, 2) + pow(col - world->player_col, 2));
             if ((world->board[row][col].entity == WALL || world->board[row][col].entity == BOULDER
                     || world->board[row][col].entity == GEM) && !(row == y2 && col == x2)) {
                 double x = col;
@@ -381,7 +380,28 @@ int isblocked(struct world_t *world, int x1, int y1, int x2, int y2) {
         }
     }
 
-    return num > 0;
+    int count = 0;
+    for (int i = 0; i < num; i++) {
+        double x = cols[i];
+        double y = rows[i];
+
+        struct point_t p1 = { x - 0.5, y - 0.5 };
+        struct point_t p2 = { x + 0.5, y - 0.5 };
+        struct point_t p3 = { x + 0.5, y + 0.5 };
+        struct point_t p4 = { x - 0.5, y + 0.5 };
+
+        if (intersect(a, b, p1, p1) || intersect(a, b, p2, p2) || intersect(a, b, p3, p3)
+                || intersect(a, b, p4, p4)) {
+            types[i] = 2;
+            count++;
+        }
+    }
+
+    if(types[0] == 1){
+
+    }
+
+    return count > 0;
 }
 
 void print_game_board(struct world_t *world) {
@@ -409,7 +429,6 @@ void print_game_board(struct world_t *world) {
     //shadow
     for (int row = 0; row < ROWS; row++) {
         for (int col = 0; col < COLS; col++) {
-            double distance = sqrt(pow(row - world->player_row, 2) + pow(col - world->player_col, 2));
             if (board[row][col].entity != LAVA && board[row][col].entity != HIDDEN
                     && isblocked(world, x1, y1, col, row)) {
                 board[row][col].entity = HIDDEN;
