@@ -98,7 +98,6 @@ void game_loop(struct world_t *world) {
 
             nrow = world->player_row + drow;
             ncol = world->player_col + dcol;
-            int moved = FALSE;
 
             if (!is_valid_position(nrow, ncol)) {
 
