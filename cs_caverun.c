@@ -423,6 +423,9 @@ void handler_bounder(struct world_t *world) {
         }
     }
 
+
+    move_lavas(world);
+
     if (world->lavas[world->player_row][world->player_col]) {
         world->lives--;
         if (world->lives == 0) {
@@ -431,8 +434,6 @@ void handler_bounder(struct world_t *world) {
             blocked = spawn_player(world);
         }
     }
-
-    move_lavas(world);
 
     if (world->lost) {
         printf("Game Lost! You scored %d points!\n", world->score);
@@ -530,6 +531,9 @@ void game_loop(struct world_t *world) {
                 world->mode = SEED;
                 printf("Lava Seeds: Activated\n");
             }
+
+            shift(buffer);
+            buffer[3] = command;
         } else {
             step(world, input);
         }
