@@ -98,6 +98,8 @@ int count_max_points_remain(struct world_t *world) {
 void game_loop(struct world_t *world) {
     char command = 0;
 
+    printf("--- Gameplay Phase ---\n");
+
     while (scanf(" %c", &command) == 1 && command != 'q') {
         if (command == 'w' || command == 'a' || command == 's' || command == 'd') {
             int drow, dcol;
@@ -259,8 +261,8 @@ void setup(struct world_t *world) {
     print_board(world->board, world->player_row, world->player_col, world->lives);
     world->board[world->player_row][world->player_col].entity = EMPTY;
 
-    for (int row = 0; row < ROWS; row++) {
-        for (int col = 0; col < COLS; col++) {
+    for (row = 0; row < ROWS; row++) {
+        for (col = 0; col < COLS; col++) {
             if (world->board[row][col].entity == DIRT) {
                 world->num_collectible++;
             }
@@ -270,7 +272,6 @@ void setup(struct world_t *world) {
         }
     }
 
-    printf("--- Gameplay Phase ---\n");
 }
 
 // =============================================================================
