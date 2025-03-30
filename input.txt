@@ -1,4 +1,14 @@
-4 4
+9 4
+b 5 4
+b 3 5
+w 7 5
 s
-WW
+w
+w
+WD
+w
+WA
+r
+r
+r
 q

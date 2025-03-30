@@ -49,10 +49,14 @@ struct world_t {
     int num_collectible;
     int num_collected;
 
+    char gravity;
+
     int win;
     int score;
     int player_row;
     int player_col;
+
+    int last_dash;
 };
 
 // Provided Function Prototypes
@@ -124,25 +128,28 @@ void try_unlock(struct world_t *world) {
     }
 }
 
+void get_offset(char command, int *drow, int *dcol) {
+    *drow = 0;
+    *dcol = 0;
+    if (command == 'w') {
+        *drow = -1;
+    }
+    if (command == 's') {
+        *drow = 1;
+    }
+    if (command == 'a') {
+        *dcol = -1;
+    }
+    if (command == 'd') {
+        *dcol = 1;
+    }
+}
+
 int move_player(struct world_t *world, char command) {
     int drow, dcol;
     int nrow, ncol;
 
-    drow = 0;
-    dcol = 0;
-    if (command == 'w') {
-        drow = -1;
-    }
-    if (command == 's') {
-        drow = 1;
-    }
-    if (command == 'a') {
-        dcol = -1;
-    }
-    if (command == 'd') {
-        dcol = 1;
-    }
-
+    get_offset(command, &drow, &dcol);
     nrow = world->player_row + drow;
     ncol = world->player_col + dcol;
 
@@ -227,6 +234,72 @@ void dash_move_player(struct world_t *world, const char *input) {
             move_player(world, command2);
         }
     }
+}
+
+void boulder_move_to(struct world_t *world, int row1, int col1, int row2, int col2) {
+    if (is_valid_position(row1, col1) && is_valid_position(row2, col2) && world->board[row1][col1].entity == BOULDER
+            && world->board[row2][col2].entity == EMPTY) {
+        world->board[row1][col1].entity = EMPTY;
+        world->board[row2][col2].entity = BOULDER;
+    }
+}
+
+void boulder_move(struct world_t *world) {
+    int drow, dcol;
+    get_offset(world->gravity, &drow, &dcol);
+
+    if (world->gravity == 's') {
+        for (int row = ROWS - 1; row >= 0; row--) {
+            for (int col = 0; col < COLS; col++) {
+                boulder_move_to(world, row, col, row + drow, col + dcol);
+            }
+        }
+    }
+
+    if (world->gravity == 'w') {
+        for (int row = 0; row < ROWS; row++) {
+            for (int col = 0; col < COLS; col++) {
+                boulder_move_to(world, row, col, row + drow, col + dcol);
+            }
+        }
+    }
+
+    if (world->gravity == 'a') {
+        for (int col = 0; col < COLS; col++) {
+            for (int row = 0; row < ROWS; row++) {
+                boulder_move_to(world, row, col, row + drow, col + dcol);
+            }
+        }
+    }
+
+    if (world->gravity == 'd') {
+        for (int col = COLS - 1; col >= 0; col--) {
+            for (int row = 0; row < ROWS; row++) {
+                boulder_move_to(world, row, col, row + drow, col + dcol);
+            }
+        }
+    }
+}
+
+void step(struct world_t *world, const char *input) {
+    char command = input[0];
+
+    if (command == 'w' || command == 'a' || command == 's' || command == 'd') {
+        world->last_dash = FALSE;
+        move_player(world, command);
+    } else if (command == 'r') {
+        world->last_dash = FALSE;
+    } else if (strlen(input) == 2 && is_in(input[0], "WASD") && is_in(input[1], "WASD")) {
+        if (world->last_dash) {
+            printf("You're out of breath! Skipping dash move...\n");
+            world->last_dash = FALSE;
+        } else {
+            dash_move_player(world, input);
+            world->last_dash = TRUE;
+        }
+    }
+
+    boulder_move(world);
 
     print_board(world->board, world->player_row, world->player_col, world->lives);
     if (world->win) {
@@ -236,38 +309,17 @@ void dash_move_player(struct world_t *world, const char *input) {
 
 void game_loop(struct world_t *world) {
     char input[20];
-    int last_dash = FALSE;
 
     printf("--- Gameplay Phase ---\n");
 
     while (scanf("%s", input) == 1 && input[0] != 'q' && !world->win) {
         char command = input[0];
-
-        if (command == 'w' || command == 'a' || command == 's' || command == 'd') {
-            last_dash = FALSE;
-
-            move_player(world, command);
-            print_board(world->board, world->player_row, world->player_col, world->lives);
-            if (world->win) {
-                printf("You Win! Final Score: %d point(s)!\n", world->score);
-            }
-
-        } else if (command == 'r') {
-            last_dash = FALSE;
-            print_board(world->board, world->player_row, world->player_col, world->lives);
-        } else if (command == 'p') {
+        if (command == 'p') {
             printf("You have %d point(s)!\n", world->score);
         } else if (command == 'm') {
             print_statistics(world);
-        } else if (strlen(input) == 2 && is_in(input[0], "WASD") && is_in(input[1], "WASD")) {
-            if (last_dash) {
-                printf("You're out of breath! Skipping dash move...\n");
-                print_board(world->board, world->player_row, world->player_col, world->lives);
-                last_dash = FALSE;
-            } else {
-                dash_move_player(world, input);
-                last_dash = TRUE;
-            }
+        } else {
+            step(world, input);
         }
     }
 
@@ -347,6 +399,8 @@ void setup(struct world_t *world) {
     world->lives = INITIAL_LIVES;
     world->num_collectible = 0;
     world->num_collected = 0;
+    world->last_dash = FALSE;
+    world->gravity = 's';
 
     initialise_board(world->board);
 
