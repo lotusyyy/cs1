@@ -77,11 +77,13 @@ struct world_t {
 
 // Provided Function Prototypes
 void initialise_board(struct tile_t board[ROWS][COLS]);
-void print_board(struct tile_t board[ROWS][COLS], int player_row, int player_col, int lives_remaining);
+void print_board(struct tile_t board[ROWS][COLS], int player_row,
+        int player_col, int lives_remaining);
 void print_board_line(void);
 void print_board_header(int lives);
-void print_map_statistics(int number_of_dirt_tiles, int number_of_gem_tiles, int number_of_boulder_tiles,
-        double completion_percentage, int maximum_points_remaining);
+void print_map_statistics(int number_of_dirt_tiles, int number_of_gem_tiles,
+        int number_of_boulder_tiles, double completion_percentage,
+        int maximum_points_remaining);
 
 // Add your function prototypes below this line
 void setup(struct world_t *world);
@@ -172,7 +174,8 @@ int move_player(struct world_t *world, char command) {
     if (!is_valid_position(nrow, ncol)) {
 
         return TRUE;
-    } else if (world->board[nrow][ncol].entity == BOULDER || world->board[nrow][ncol].entity == WALL
+    } else if (world->board[nrow][ncol].entity == BOULDER
+            || world->board[nrow][ncol].entity == WALL
             || world->board[nrow][ncol].entity == EXIT_LOCKED) {
 
         return TRUE;
@@ -201,7 +204,8 @@ int move_player(struct world_t *world, char command) {
         world->player_col = ncol;
     }
 
-    if (world->board[world->player_row][world->player_col].entity == EXIT_UNLOCKED) {
+    if (world->board[world->player_row][world->player_col].entity
+            == EXIT_UNLOCKED) {
         world->win = TRUE;
     }
     return FALSE;
@@ -234,8 +238,10 @@ void print_statistics(struct world_t *world) {
         maximum_points_remaining *= 10;
     }
 
-    completion_percentage = 100.0 * world->num_collected / world->num_collectible;
-    print_map_statistics(number_of_dirt_tiles, number_of_gem_tiles, number_of_boulder_tiles, completion_percentage,
+    completion_percentage = 100.0 * world->num_collected
+            / world->num_collectible;
+    print_map_statistics(number_of_dirt_tiles, number_of_gem_tiles,
+            number_of_boulder_tiles, completion_percentage,
             maximum_points_remaining);
 }
 
@@ -262,8 +268,10 @@ void dash_move_player(struct world_t *world, const char *input) {
     }
 }
 
-void boulder_move_to(struct world_t *world, int row1, int col1, int row2, int col2) {
-    if (is_valid_position(row1, col1) && is_valid_position(row2, col2) && world->board[row1][col1].entity == BOULDER
+void boulder_move_to(struct world_t *world, int row1, int col1, int row2,
+        int col2) {
+    if (is_valid_position(row1, col1) && is_valid_position(row2, col2)
+            && world->board[row1][col1].entity == BOULDER
             && world->board[row2][col2].entity == EMPTY) {
         world->board[row1][col1].entity = EMPTY;
         world->board[row2][col2].entity = BOULDER;
@@ -308,7 +316,8 @@ int boulder_move(struct world_t *world) {
 
     for (int row = 0; row < ROWS; row++) {
         for (int col = 0; col < COLS; col++) {
-            if (world->board[row][col].entity == BOULDER && row == world->player_row && col == world->player_col) {
+            if (world->board[row][col].entity == BOULDER
+                    && row == world->player_row && col == world->player_col) {
                 return TRUE;
             }
         }
@@ -322,14 +331,16 @@ int spawn_player(struct world_t *world) {
     int blocked = TRUE;
 
     if (world->lavas[row][col]) {
-        printf("Respawn blocked! You're toast! Final score: %d points.\n", world->score);
+        printf("Respawn blocked! You're toast! Final score: %d points.\n",
+                world->score);
     } else if (world->board[row][col].entity == EMPTY) {
         printf("Respawning!\n");
         world->player_row = world->player_row_start;
         world->player_col = world->player_col_start;
         blocked = FALSE;
     } else {
-        printf("Respawn blocked! Game over. Final score: %d points.\n", world->score);
+        printf("Respawn blocked! Game over. Final score: %d points.\n",
+                world->score);
     }
 
     return blocked;
@@ -344,7 +355,8 @@ int ccw(struct point_t a, struct point_t b, struct point_t c) {
     return (c.y - a.y) * (b.x - a.x) > (b.y - a.y) * (c.x - a.x);
 }
 
-int intersect(struct point_t a, struct point_t b, struct point_t c, struct point_t d) {
+int intersect(struct point_t a, struct point_t b, struct point_t c,
+        struct point_t d) {
     return ccw(a, c, d) != ccw(b, c, d) && ccw(a, b, c) != ccw(a, b, d);
 }
 
@@ -368,7 +380,8 @@ int point_onside(struct point_t a, struct point_t b, struct point_t c) {
     return v < c.y;
 }
 
-int same_side(struct point_t a, struct point_t b, struct point_t p1, struct point_t p2) {
+int same_side(struct point_t a, struct point_t b, struct point_t p1,
+        struct point_t p2) {
     double f1 = (a.y - b.y) * (p1.x - a.x) + (b.x - a.x) * (p1.y - a.y);
     double f2 = (a.y - b.y) * (p2.x - a.x) + (b.x - a.x) * (p2.y - a.y);
     return f1 * f2 > 0;
@@ -378,8 +391,10 @@ int is_wall(struct world_t *world, int row1, int col1) {
 
     for (int row = 0; row < ROWS; row++) {
         for (int col = 0; col < COLS; col++) {
-            if ((world->board[row][col].entity == WALL || world->board[row][col].entity == BOULDER
-                    || world->board[row][col].entity == GEM) && row == row1 && col == col1) {
+            if ((world->board[row][col].entity == WALL
+                    || world->board[row][col].entity == BOULDER
+                    || world->board[row][col].entity == GEM) && row == row1
+                    && col == col1) {
                 return TRUE;
             }
         }
@@ -405,8 +420,10 @@ int isblocked(struct world_t *world, int x1, int y1, int x2, int y2) {
 
     for (int row = 0; row < ROWS; row++) {
         for (int col = 0; col < COLS; col++) {
-            if ((world->board[row][col].entity == WALL || world->board[row][col].entity == BOULDER
-                    || world->board[row][col].entity == GEM) && !(row == y2 && col == x2)) {
+            if ((world->board[row][col].entity == WALL
+                    || world->board[row][col].entity == BOULDER
+                    || world->board[row][col].entity == GEM)
+                    && !(row == y2 && col == x2)) {
                 double x = col;
                 double y = row;
 
@@ -415,8 +432,8 @@ int isblocked(struct world_t *world, int x1, int y1, int x2, int y2) {
                 struct point_t p3 = { x + 0.51, y + 0.51 };
                 struct point_t p4 = { x - 0.51, y + 0.51 };
 
-                if (intersect(a, b, p1, p2) || intersect(a, b, p2, p3) || intersect(a, b, p3, p4)
-                        || intersect(a, b, p4, p1)) {
+                if (intersect(a, b, p1, p2) || intersect(a, b, p2, p3)
+                        || intersect(a, b, p3, p4) || intersect(a, b, p4, p1)) {
                     rows[num] = row;
                     cols[num] = col;
                     types[num] = 0;
@@ -448,7 +465,6 @@ int isblocked(struct world_t *world, int x1, int y1, int x2, int y2) {
         int sum2 = s1 + s2 + s3 + s4;
 
         if (sum1 == 1 && sum2 == 2) {
-            // printf("%d %d %d %d %d %d %d\n", y2, x2, sum2, s1, s2, s3, s4);
             types[i] = 1;
 
             if (s1) {
@@ -468,8 +484,6 @@ int isblocked(struct world_t *world, int x1, int y1, int x2, int y2) {
                 start[i] = p4;
                 end[i] = p1;
             }
-
-           // printf("%d %d %d %d %d\n", y2, x2, num, rows[i], cols[i]);
         }
     }
 
@@ -488,7 +502,6 @@ int isblocked(struct world_t *world, int x1, int y1, int x2, int y2) {
     for (int i = 0; i < num; i++) {
         for (int j = 0; j < num; j++) {
             if (types[i] == 1 && types[j] == 1 && i != j) {
-                //printf("%d %d\n", y2, x2);
                 if (!same_side(a, b, start[i], end[j])) {
                     count++;
                 }
@@ -496,49 +509,7 @@ int isblocked(struct world_t *world, int x1, int y1, int x2, int y2) {
         }
     }
 
-    if (count > 0) {
-        return TRUE;
-    }
-
-    /*
-    int offsety = (y2 - y1) / abs(y2 - y1);
-    int offsetx = (x2 - x1) / abs(x2 - x1);
-    int steps = abs(x2 - x1);
-
-    if (y2 - y1 == x2 - x1) {
-        for (int i = 0; i < ROWS * COLS; i++) {
-            for (int j = 0; j < ROWS * COLS; j++) {
-                int by1 = i / COLS;
-                int bx1 = i % COLS;
-
-                int by2 = j / COLS;
-                int bx2 = j % COLS;
-
-                if (is_wall(world, by1, bx1) && is_wall(world, by2, bx2) && i != j) {
-                    for (int s = 0; s < steps; s++) {
-                        int by = by1 + offsety;
-                        int bx = bx1 + offsetx;
-
-                        if (is_neighbor(by, bx, by2, bx2)) {
-                            return TRUE;
-                        }
-                    }
-
-                    for (int s = 0; s < steps; s++) {
-                        int by = by1 - offsety;
-                        int bx = bx1 - offsetx;
-
-                        if (is_neighbor(by, bx, by2, bx2)) {
-                            return TRUE;
-                        }
-                    }
-                }
-            }
-        }
-    }
-    */
-
-    return FALSE;
+    return count > 0;
 }
 
 void print_game_board(struct world_t *world) {
@@ -549,7 +520,9 @@ void print_game_board(struct world_t *world) {
 
     for (int row = 0; row < ROWS; row++) {
         for (int col = 0; col < COLS; col++) {
-            double distance = sqrt(pow(row - world->player_row, 2) + pow(col - world->player_col, 2));
+            double distance = sqrt(
+                    pow(row - world->player_row, 2)
+                            + pow(col - world->player_col, 2));
             if (world->lavas[row][col]) {
                 board[row][col].entity = LAVA;
                 //printf("%d %d is lava\n", row, col);
@@ -567,7 +540,8 @@ void print_game_board(struct world_t *world) {
     if (world->shadow) {
         for (int row = 0; row < ROWS; row++) {
             for (int col = 0; col < COLS; col++) {
-                if (board[row][col].entity != LAVA && board[row][col].entity != HIDDEN
+                if (board[row][col].entity != LAVA
+                        && board[row][col].entity != HIDDEN
                         && isblocked(world, x1, y1, col, row)) {
                     board[row][col].entity = HIDDEN;
                 }
@@ -680,7 +654,8 @@ void step(struct world_t *world, const char *input) {
         move_player(world, command);
     } else if (command == 'r') {
         world->last_dash = FALSE;
-    } else if (strlen(input) == 2 && is_in(input[0], "WASD") && is_in(input[1], "WASD")) {
+    } else if (strlen(input) == 2 && is_in(input[0], "WASD")
+            && is_in(input[1], "WASD")) {
         if (world->last_dash) {
             printf("You're out of breath! Skipping dash move...\n");
             world->last_dash = FALSE;
@@ -705,7 +680,8 @@ void game_loop(struct world_t *world) {
 
     printf("--- Gameplay Phase ---\n");
 
-    while (!world->win && !world->lost && scanf("%s", input) == 1 && input[0] != 'q') {
+    while (!world->win && !world->lost && scanf("%s", input) == 1
+            && input[0] != 'q') {
         char command = input[0];
 
         if (command != 'L') {
@@ -786,7 +762,8 @@ int add_walls(struct world_t *world, int row1, int col1, int row2, int col2) {
                 return FALSE;
             }
 
-            if (world->board[row][col].entity != DIRT || (row == world->player_row && col == world->player_col)) {
+            if (world->board[row][col].entity != DIRT
+                    || (row == world->player_row && col == world->player_col)) {
                 return FALSE;
             }
         }
@@ -817,7 +794,8 @@ void setup_feature(struct world_t *world) {
             }
         } else if (!is_valid_position(row, col)) {
             printf("Invalid location: position is not on map!\n");
-        } else if (world->board[row][col].entity != DIRT || (row == world->player_row && col == world->player_col)) {
+        } else if (world->board[row][col].entity != DIRT
+                || (row == world->player_row && col == world->player_col)) {
             printf("Invalid location: tile is occupied!\n");
         } else {
             if (type == 'w') {
@@ -869,7 +847,8 @@ void setup(struct world_t *world) {
     printf("Enter the player's starting position: ");
     scanf("%d%d", &world->player_row, &world->player_col);
     while (!is_valid_position(world->player_row, world->player_col)) {
-        printf("Position %d %d is invalid!\n", world->player_row, world->player_col);
+        printf("Position %d %d is invalid!\n", world->player_row,
+                world->player_col);
 
         printf("Enter the player's starting position: ");
         scanf("%d%d", &world->player_row, &world->player_col);
@@ -877,7 +856,8 @@ void setup(struct world_t *world) {
     world->player_row_start = world->player_row;
     world->player_col_start = world->player_col;
 
-    print_board(world->board, world->player_row, world->player_col, world->lives);
+    print_board(world->board, world->player_row, world->player_col,
+            world->lives);
 
     setup_feature(world);
 
@@ -897,7 +877,8 @@ void initialise_board(struct tile_t board[ROWS][COLS]) {
 }
 
 // Prints the game board, showing the player's position and lives remaining
-void print_board(struct tile_t board[ROWS][COLS], int player_row, int player_col, int lives_remaining) {
+void print_board(struct tile_t board[ROWS][COLS], int player_row,
+        int player_col, int lives_remaining) {
     print_board_line();
     print_board_header(lives_remaining);
     print_board_line();
@@ -950,8 +931,9 @@ void print_board_line(void) {
 }
 
 // Prints game statistics: tile types, completion %, and points remaining.
-void print_map_statistics(int number_of_dirt_tiles, int number_of_gem_tiles, int number_of_boulder_tiles,
-        double completion_percentage, int maximum_points_remaining) {
+void print_map_statistics(int number_of_dirt_tiles, int number_of_gem_tiles,
+        int number_of_boulder_tiles, double completion_percentage,
+        int maximum_points_remaining) {
     printf("========= Map Statistics =========\n");
     printf("Tiles Remaining by Type:\n");
     printf("  - DIRT:      %d\n", number_of_dirt_tiles);
