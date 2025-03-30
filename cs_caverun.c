@@ -107,6 +107,10 @@ void game_loop(struct world_t *world) {
                 world->player_row = nrow;
                 world->player_col = ncol;
                 moved = TRUE;
+            } else if (world->board[nrow][ncol].entity == EMPTY) {
+                world->player_row = nrow;
+                world->player_col = ncol;
+                moved = TRUE;
             } else if (world->board[nrow][ncol].entity == BOULDER || world->board[nrow][ncol].entity == WALL) {
 
             }
