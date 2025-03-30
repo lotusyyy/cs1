@@ -262,6 +262,7 @@ void game_loop(struct world_t *world) {
             if (last_dash) {
                 printf("You're out of breath! Skipping dash move...\n");
                 print_board(world->board, world->player_row, world->player_col, world->lives);
+                last_dash = FALSE;
             } else {
                 dash_move_player(world, input);
                 last_dash = TRUE;
