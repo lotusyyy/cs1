@@ -381,6 +381,8 @@ int isblocked(struct world_t *world, int x1, int y1, int x2, int y2) {
     int rows[ROWS * COLS];
     int cols[ROWS * COLS];
     int types[ROWS * COLS];
+    struct point_t start[ROWS * COLS];
+    struct point_t end[ROWS * COLS];
     int num = 0;
 
     for (int row = 0; row < ROWS; row++) {
@@ -395,7 +397,7 @@ int isblocked(struct world_t *world, int x1, int y1, int x2, int y2) {
                 struct point_t p3 = { x + 0.5, y + 0.5 };
                 struct point_t p4 = { x - 0.5, y + 0.5 };
 
-                if (intersect(a, b, p1, p2) || intersect(a, b, p2, p3) || intersect(a, b, p3, p4)
+                if (intersect(a, b, p1, p2) || intersect(a, b, p3, p2) || intersect(a, b, p4, p3)
                         || intersect(a, b, p4, p1)) {
                     rows[num] = row;
                     cols[num] = col;
@@ -406,7 +408,6 @@ int isblocked(struct world_t *world, int x1, int y1, int x2, int y2) {
         }
     }
 
-    int count = 0;
     for (int i = 0; i < num; i++) {
         double x = cols[i];
         double y = rows[i];
@@ -430,59 +431,54 @@ int isblocked(struct world_t *world, int x1, int y1, int x2, int y2) {
 
         if (sum1 == 1 && sum2 == 2) {
             // printf("%d %d %d %d %d %d %d\n", y2, x2, sum2, s1, s2, s3, s4);
-            types[i] = 2;
+            types[i] = 1;
 
-            //printf("%d %d %d\n", y2, x2, sum2);
+            if (s1) {
+                start[i] = p1;
+                end[i] = p2;
+            }
+
+            if (s2) {
+                start[i] = p2;
+                end[i] = p3;
+            }
+            if (s3) {
+                start[i] = p3;
+                end[i] = p4;
+            }
+            if (s4) {
+                start[i] = p4;
+                end[i] = p1;
+            }
+
+            //printf("%d %d %d %d %d\n", y2, x2, num, rows[i], cols[i]);
+        }
+    }
+
+    int count = 0;
+    for (int i = 0; i < num; i++) {
+        if (types[i] == 0) {
             count++;
         }
     }
 
-    /*
-     int count = 0;
-     for (int i = 0; i < num; i++) {
-     double x = cols[i];
-     double y = rows[i];
-
-     struct point_t p1 = { x - 0.5, y - 0.5 };
-     struct point_t p2 = { x + 0.5, y - 0.5 };
-     struct point_t p3 = { x + 0.5, y + 0.5 };
-     struct point_t p4 = { x - 0.5, y + 0.5 };
-
-     int dir = 1;
-     if (b.x - a.x < 0) {
-     dir = -1;
-     }
-
-     for (double cx = a.x + 0.5; cx < b.x; cx += 1) {
-
-     }
-
-     int s1 = side(a, b, p1);
-     int s2 = side(a, b, p2);
-     int s3 = side(a, b, p3);
-     int s4 = side(a, b, p4);
-     int sum1 = s1 + s2 + s3 + s4;
-
-     int o1 = intersect(a, b, p1, p1);
-     int o2 = intersect(a, b, p2, p2);
-     int o3 = intersect(a, b, p3, p3);
-     int o4 = intersect(a, b, p4, p4);
-     int sum2 = o1 + o2 + o3 + o4;
-
-     printf("sum2 %d\n", sum2);
-
-     if (sum1 == 3) {
-     types[i] = 2;
-     count++;
-     }
-     }
-     */
-
-    if (num > 0 && types[0] == 1) {
-
+    if (count > 0) {
+        return TRUE;
     }
 
-    return num - count > 0;
+    count = 0;
+    for (int i = 0; i < num; i++) {
+        for (int j = 0; j < num; j++) {
+            if (types[i] == 1 && types[j] == 1 && i != j) {
+                printf("%d %d\n", y2, x2);
+                if (!same_side(a, b, start[i], start[j])) {
+                    count++;
+                }
+            }
+        }
+    }
+
+    return count > 0;
 }
 
 void print_game_board(struct world_t *world) {
