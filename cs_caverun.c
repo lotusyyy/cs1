@@ -67,13 +67,24 @@ int main(void) {
 }
 
 // Add your function definitions below this line
+int is_valid_position(int row, int col) {
+    return row >= 0 && row < ROWS && col >= 0 && col < COLS;
+}
+
 void setup(struct world_t *world) {
     world->lives = INITIAL_LIVES;
     initialise_board(world->board);
 
     printf("--- Game Setup Phase ---\n");
+
     printf("Enter the player's starting position: ");
     scanf("%d%d", &world->player_row, &world->player_col);
+    while (!is_valid_position(world->player_row, world->player_col)) {
+        printf("Position %d %d is invalid!\n", world->player_row, world->player_col);
+
+        printf("Enter the player's starting position: ");
+        scanf("%d%d", &world->player_row, &world->player_col);
+    }
 
     print_board(world->board, world->player_row, world->player_col, world->lives);
 }
