@@ -383,17 +383,17 @@ void move_lavas(struct world_t *world) {
             int neighbors = count_neighbors(world, row, col);
             if (world->mode == GAME) {
                 if (!world->lavas[row][col]) {
-                    next_lavas[ROWS][COLS] = neighbors == 3;
+                    next_lavas[row][col] = neighbors == 3;
                 } else if (neighbors < 2 || neighbors > 3) {
-                    next_lavas[ROWS][COLS] = FALSE;
+                    next_lavas[row][col]= FALSE;
                 } else {
-                    next_lavas[ROWS][COLS] = TRUE;
+                    next_lavas[row][col] = TRUE;
                 }
             } else {
                 if (!world->lavas[row][col]) {
-                    next_lavas[ROWS][COLS] = neighbors == 2;
+                    next_lavas[row][col] = neighbors == 2;
                 } else {
-                    next_lavas[ROWS][COLS] = FALSE;
+                    next_lavas[row][col] = FALSE;
                 }
             }
         }
