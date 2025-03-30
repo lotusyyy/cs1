@@ -426,7 +426,8 @@ void handler_bounder(struct world_t *world) {
 
     move_lavas(world);
 
-    if (world->lavas[world->player_row][world->player_col]) {
+    if (world->lavas[world->player_row][world->player_col]
+                                        && !world->win && !world->lost && !blocked) {
         world->lives--;
         if (world->lives == 0) {
             world->lost = TRUE;
