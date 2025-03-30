@@ -397,7 +397,7 @@ int isblocked(struct world_t *world, int x1, int y1, int x2, int y2) {
         }
     }
 
-    if(types[0] == 1){
+    if(num > 0 && types[0] == 1){
 
     }
 
