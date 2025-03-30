@@ -119,7 +119,7 @@ void game_loop(struct world_t *world) {
                 print_board(world->board, world->player_row, world->player_col, world->lives);
             }
         } else if (command == 'r') {
-
+            print_board(world->board, world->player_row, world->player_col, world->lives);
         }
     }
 
