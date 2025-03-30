@@ -483,8 +483,11 @@ void game_loop(struct world_t *world) {
 
     while (!world->win && !world->lost && scanf("%s", input) == 1 && input[0] != 'q') {
         char command = input[0];
-        shift(buffer);
-        buffer[3] = command;
+
+        if (command != 'L') {
+            shift(buffer);
+            buffer[3] = command;
+        }
 
         if (command == 'p') {
             printf("You have %d point(s)!\n", world->score);
@@ -517,6 +520,8 @@ void game_loop(struct world_t *world) {
 
             handler_bounder(world);
         } else if (command == 'L') {
+            printf("buffer is %s\n", buffer);
+
             if (strcmp("wdsa", buffer) == 0) {
                 world->mode = GAME;
                 printf("Game Of Lava: Activated\n");
