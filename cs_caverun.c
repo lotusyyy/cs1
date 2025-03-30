@@ -335,15 +335,6 @@ int spawn_player(struct world_t *world) {
     return blocked;
 }
 
-int is_opaque(struct world_t *world, int x, double y) {
-    int target_row = 0;
-    for (int row = 0; row < ROWS; row++) {
-        if (abs(row - y) < 0.5) {
-
-        }
-    }
-}
-
 struct point_t {
     double x;
     double y;
