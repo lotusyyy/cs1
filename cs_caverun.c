@@ -374,6 +374,24 @@ int same_side(struct point_t a, struct point_t b, struct point_t p1, struct poin
     return f1 * f2 > 0;
 }
 
+int is_wall(struct world_t *world, int row1, int col1) {
+
+    for (int row = 0; row < ROWS; row++) {
+        for (int col = 0; col < COLS; col++) {
+            if ((world->board[row][col].entity == WALL || world->board[row][col].entity == BOULDER
+                    || world->board[row][col].entity == GEM) && row == row1 && col == col1) {
+                return TRUE;
+            }
+        }
+    }
+    return FALSE;
+}
+
+int is_neighbor(int x1, int y1, int x2, int y2) {
+    int distance = abs(x1 - x2) + abs(y1 - y2);
+    return distance == 2 && x1 != x2 && y1 != y2;
+}
+
 int isblocked(struct world_t *world, int x1, int y1, int x2, int y2) {
     struct point_t a = { x1, y1 };
     struct point_t b = { x2, y2 };
@@ -392,12 +410,12 @@ int isblocked(struct world_t *world, int x1, int y1, int x2, int y2) {
                 double x = col;
                 double y = row;
 
-                struct point_t p1 = { x - 0.5, y - 0.5 };
-                struct point_t p2 = { x + 0.5, y - 0.5 };
-                struct point_t p3 = { x + 0.5, y + 0.5 };
-                struct point_t p4 = { x - 0.5, y + 0.5 };
+                struct point_t p1 = { x - 0.51, y - 0.51 };
+                struct point_t p2 = { x + 0.51, y - 0.51 };
+                struct point_t p3 = { x + 0.51, y + 0.51 };
+                struct point_t p4 = { x - 0.51, y + 0.51 };
 
-                if (intersect(a, b, p1, p2) || intersect(a, b, p3, p2) || intersect(a, b, p4, p3)
+                if (intersect(a, b, p1, p2) || intersect(a, b, p2, p3) || intersect(a, b, p3, p4)
                         || intersect(a, b, p4, p1)) {
                     rows[num] = row;
                     cols[num] = col;
@@ -451,7 +469,7 @@ int isblocked(struct world_t *world, int x1, int y1, int x2, int y2) {
                 end[i] = p1;
             }
 
-            //printf("%d %d %d %d %d\n", y2, x2, num, rows[i], cols[i]);
+           // printf("%d %d %d %d %d\n", y2, x2, num, rows[i], cols[i]);
         }
     }
 
@@ -478,7 +496,49 @@ int isblocked(struct world_t *world, int x1, int y1, int x2, int y2) {
         }
     }
 
-    return count > 0;
+    if (count > 0) {
+        return TRUE;
+    }
+
+    /*
+    int offsety = (y2 - y1) / abs(y2 - y1);
+    int offsetx = (x2 - x1) / abs(x2 - x1);
+    int steps = abs(x2 - x1);
+
+    if (y2 - y1 == x2 - x1) {
+        for (int i = 0; i < ROWS * COLS; i++) {
+            for (int j = 0; j < ROWS * COLS; j++) {
+                int by1 = i / COLS;
+                int bx1 = i % COLS;
+
+                int by2 = j / COLS;
+                int bx2 = j % COLS;
+
+                if (is_wall(world, by1, bx1) && is_wall(world, by2, bx2) && i != j) {
+                    for (int s = 0; s < steps; s++) {
+                        int by = by1 + offsety;
+                        int bx = bx1 + offsetx;
+
+                        if (is_neighbor(by, bx, by2, bx2)) {
+                            return TRUE;
+                        }
+                    }
+
+                    for (int s = 0; s < steps; s++) {
+                        int by = by1 - offsety;
+                        int bx = bx1 - offsetx;
+
+                        if (is_neighbor(by, bx, by2, bx2)) {
+                            return TRUE;
+                        }
+                    }
+                }
+            }
+        }
+    }
+    */
+
+    return FALSE;
 }
 
 void print_game_board(struct world_t *world) {
