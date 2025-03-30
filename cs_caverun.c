@@ -683,8 +683,9 @@ void game_loop(struct world_t *world) {
     while (!world->win && !world->lost && fgets(input, 50, stdin)
             && input[0] != 'q') {
         int len = strlen(input);
-        if (len > 0 && input[len - 1] == '\n') {
+        while (len > 0 && (input[len - 1] == '\n' ||  input[len - 1] == '\r')) {
             input[len - 1] = 0;
+            len = strlen(input);
         }
 
         char command = input[0];
