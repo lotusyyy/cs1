@@ -1,7 +1,13 @@
 // cs_caverun.c
 // Written by <INSERT YOUR FULL NAME> <INSERT YOUR ZID> on <INSERT DATE>
 //
-// Description: <INSERT DESCRIPTION OF PROGRAM>
+// Description: This file implements a simplification of game mechanics
+//              explored by the 1980s 8-bit video game Boulder Dash.
+//              In this turn-based re-imagination: the player tunnels
+//              through dirt to collect gems, all while avoiding falling
+//              boulders in an attempt to reach an unlocked exit with the
+//              most points. But beware! For those of you brave enough
+//              to venture into the deep: shadow and fire awaits!
 
 // Provided Libraries
 #include <stdio.h>
@@ -26,15 +32,22 @@ enum entity {
 // Add your own enums below this line
 
 // Represents a tile/cell on the game board
-struct tile {
+struct tile_t {
     enum entity entity;
 };
 
 // Add your own structs below this line
+struct world_t {
+    struct tile_t board[ROWS][COLS];
+    int lives;
+
+    int player_row;
+    int player_col;
+};
 
 // Provided Function Prototypes
-void initialise_board(struct tile board[ROWS][COLS]);
-void print_board(struct tile board[ROWS][COLS], int player_row, int player_col, int lives_remaining);
+void initialise_board(struct tile_t board[ROWS][COLS]);
+void print_board(struct tile_t board[ROWS][COLS], int player_row, int player_col, int lives_remaining);
 void print_board_line(void);
 void print_board_header(int lives);
 void print_map_statistics(int number_of_dirt_tiles, int number_of_gem_tiles, int number_of_boulder_tiles,
@@ -46,22 +59,30 @@ void print_map_statistics(int number_of_dirt_tiles, int number_of_gem_tiles, int
 int main(void) {
     printf("Welcome to CS Caverun!\n\n");
 
-    struct tile board[ROWS][COLS];
-    initialise_board(board);
-
-    print_board(board, INVALID_ROW, INVALID_COL, INITIAL_LIVES);
+    struct world_t world;
+    setup(&world);
 
     return 0;
 }
 
 // Add your function definitions below this line
+void setup(struct world_t *world) {
+    world->lives = INITIAL_LIVES;
+    initialise_board(world->board);
+
+    printf("--- Game Setup Phase ---\n");
+    printf("Enter the player's starting position: ");
+    scanf("%d%d", &world->player_row, &world->player_col);
+
+    print_board(world->board, world->player_row, world->player_col, world->lives);
+}
 
 // =============================================================================
 // Definitions of Provided Functions
 // =============================================================================
 
 // Given a 2D board array, initialise all tile entities to DIRT.
-void initialise_board(struct tile board[ROWS][COLS]) {
+void initialise_board(struct tile_t board[ROWS][COLS]) {
     for (int row = 0; row < ROWS; row++) {
         for (int col = 0; col < COLS; col++) {
             board[row][col].entity = DIRT;
@@ -70,7 +91,7 @@ void initialise_board(struct tile board[ROWS][COLS]) {
 }
 
 // Prints the game board, showing the player's position and lives remaining
-void print_board(struct tile board[ROWS][COLS], int player_row, int player_col, int lives_remaining) {
+void print_board(struct tile_t board[ROWS][COLS], int player_row, int player_col, int lives_remaining) {
     print_board_line();
     print_board_header(lives_remaining);
     print_board_line();
