@@ -610,6 +610,7 @@ void setup(struct world_t *world) {
     world->last_dash = FALSE;
     world->gravity = 's';
     world->mode = NONE;
+    world->radius = 0;
 
     initialise_board(world->board);
 
