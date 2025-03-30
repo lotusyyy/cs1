@@ -414,6 +414,7 @@ void game_loop(struct world_t *world) {
             if (world->gravity == 'd') {
                 printf("Gravity now pulls RIGHT!\n");
             }
+            print_game_board(world);
         } else {
             step(world, input);
         }
