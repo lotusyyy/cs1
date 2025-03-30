@@ -282,6 +282,8 @@ void setup_feature(struct world_t *world) {
             }
         }
     }
+    try_unlock(world);
+
     print_board(world->board, world->player_row, world->player_col, world->lives);
     world->board[world->player_row][world->player_col].entity = EMPTY;
 
@@ -307,11 +309,12 @@ void setup(struct world_t *world) {
         printf("Enter the player's starting position: ");
         scanf("%d%d", &world->player_row, &world->player_col);
     }
+    print_board(world->board, world->player_row, world->player_col, world->lives);
 
     setup_feature(world);
-    try_unlock(world);
 
-    print_board(world->board, world->player_row, world->player_col, world->lives);
+
+
 }
 
 // =============================================================================
