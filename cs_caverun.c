@@ -54,6 +54,7 @@ void print_map_statistics(int number_of_dirt_tiles, int number_of_gem_tiles, int
         double completion_percentage, int maximum_points_remaining);
 
 // Add your function prototypes below this line
+void setup(struct world_t *world);
 
 // Provided sample main() function (you will need to modify this)
 int main(void) {
