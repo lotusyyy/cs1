@@ -335,24 +335,7 @@ void print_game_board(struct world_t *world) {
     }
 }
 
-void step(struct world_t *world, const char *input) {
-    char command = input[0];
-
-    if (command == 'w' || command == 'a' || command == 's' || command == 'd') {
-        world->last_dash = FALSE;
-        move_player(world, command);
-    } else if (command == 'r') {
-        world->last_dash = FALSE;
-    } else if (strlen(input) == 2 && is_in(input[0], "WASD") && is_in(input[1], "WASD")) {
-        if (world->last_dash) {
-            printf("You're out of breath! Skipping dash move...\n");
-            world->last_dash = FALSE;
-        } else {
-            dash_move_player(world, input);
-            world->last_dash = TRUE;
-        }
-    }
-
+void handler_bounder(struct world_t *world){
     int lose = boulder_move(world);
     int blocked = FALSE;
 
@@ -377,6 +360,27 @@ void step(struct world_t *world, const char *input) {
     if (blocked) {
         world->lost = TRUE;
     }
+}
+
+void step(struct world_t *world, const char *input) {
+    char command = input[0];
+
+    if (command == 'w' || command == 'a' || command == 's' || command == 'd') {
+        world->last_dash = FALSE;
+        move_player(world, command);
+    } else if (command == 'r') {
+        world->last_dash = FALSE;
+    } else if (strlen(input) == 2 && is_in(input[0], "WASD") && is_in(input[1], "WASD")) {
+        if (world->last_dash) {
+            printf("You're out of breath! Skipping dash move...\n");
+            world->last_dash = FALSE;
+        } else {
+            dash_move_player(world, input);
+            world->last_dash = TRUE;
+        }
+    }
+
+    handler_bounder(world);
 }
 
 void game_loop(struct world_t *world) {
@@ -414,7 +418,8 @@ void game_loop(struct world_t *world) {
             if (world->gravity == 'd') {
                 printf("Gravity now pulls RIGHT!\n");
             }
-            print_game_board(world);
+
+            handler_bounder(world);
         } else {
             step(world, input);
         }

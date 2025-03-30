@@ -1,13 +1,13 @@
-9 4
-b 4 4
+5 4
+b 6 4
 s
-WW
 w
-WD
-i 2
+d
+s
+d
+g w
 r
-r
-r
-r
-i 0
+g d
+g s
+g a
 q
