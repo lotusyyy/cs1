@@ -331,25 +331,24 @@ int spawn_player(struct world_t *world) {
 }
 
 void print_game_board(struct world_t *world) {
-    if (world->illumination) {
-        struct tile_t board[ROWS][COLS];
-        for (int row = 0; row < ROWS; row++) {
-            for (int col = 0; col < COLS; col++) {
-                double distance = sqrt(pow(row - world->player_row, 2) + pow(col - world->player_col, 2));
-                if (world->lavas[row][col]) {
-                    board[row][col].entity = LAVA;
-                } else if (distance <= world->radius) {
-                    board[row][col].entity = world->board[row][col].entity;
-                } else {
-                    board[row][col].entity = HIDDEN;
-                }
+    struct tile_t board[ROWS][COLS];
+
+    for (int row = 0; row < ROWS; row++) {
+        for (int col = 0; col < COLS; col++) {
+            double distance = sqrt(pow(row - world->player_row, 2) + pow(col - world->player_col, 2));
+            if (world->lavas[row][col]) {
+                board[row][col].entity = LAVA;
+            } else if (distance <= world->radius) {
+                board[row][col].entity = world->board[row][col].entity;
+            } else if (world->illumination) {
+                board[row][col].entity = HIDDEN;
+            } else {
+                board[row][col].entity = world->board[row][col].entity;
             }
         }
-
-        print_board(board, world->player_row, world->player_col, world->lives);
-    } else {
-        print_board(world->board, world->player_row, world->player_col, world->lives);
     }
+
+    print_board(board, world->player_row, world->player_col, world->lives);
 }
 
 int count_neighbors(struct world_t *world, int row, int col) {
@@ -385,7 +384,7 @@ void move_lavas(struct world_t *world) {
                 if (!world->lavas[row][col]) {
                     next_lavas[row][col] = neighbors == 3;
                 } else if (neighbors < 2 || neighbors > 3) {
-                    next_lavas[row][col]= FALSE;
+                    next_lavas[row][col] = FALSE;
                 } else {
                     next_lavas[row][col] = TRUE;
                 }
@@ -592,7 +591,7 @@ void setup_feature(struct world_t *world) {
     }
     try_unlock(world);
 
-    print_board(world->board, world->player_row, world->player_col, world->lives);
+    print_game_board(world);
     world->board[world->player_row][world->player_col].entity = EMPTY;
 
     world->num_collectible += count_entities(world, DIRT);
