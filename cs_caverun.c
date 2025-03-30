@@ -102,17 +102,17 @@ void game_loop(struct world_t *world) {
 
             if (!is_valid_position(nrow, ncol)) {
 
+            } else if (world->board[nrow][ncol].entity == BOULDER || world->board[nrow][ncol].entity == WALL) {
+
             } else if (world->board[nrow][ncol].entity == DIRT) {
                 world->board[nrow][ncol].entity = EMPTY;
                 world->player_row = nrow;
                 world->player_col = ncol;
                 moved = TRUE;
-            } else if (world->board[nrow][ncol].entity == EMPTY) {
+            } else  {
                 world->player_row = nrow;
                 world->player_col = ncol;
                 moved = TRUE;
-            } else if (world->board[nrow][ncol].entity == BOULDER || world->board[nrow][ncol].entity == WALL) {
-
             }
 
             if (moved) {
