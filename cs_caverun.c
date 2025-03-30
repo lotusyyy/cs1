@@ -470,7 +470,7 @@ int isblocked(struct world_t *world, int x1, int y1, int x2, int y2) {
     for (int i = 0; i < num; i++) {
         for (int j = 0; j < num; j++) {
             if (types[i] == 1 && types[j] == 1 && i != j) {
-                printf("%d %d\n", y2, x2);
+                //printf("%d %d\n", y2, x2);
                 if (!same_side(a, b, start[i], end[j])) {
                     count++;
                 }
