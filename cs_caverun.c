@@ -368,6 +368,12 @@ int point_onside(struct point_t a, struct point_t b, struct point_t c) {
     return v < c.y;
 }
 
+int same_side(struct point_t a, struct point_t b, struct point_t p1, struct point_t p2) {
+    double f1 = (a.y - b.y) * (p1.x - a.x) + (b.x - a.x) * (p1.y - a.y);
+    double f2 = (a.y - b.y) * (p2.x - a.x) + (b.x - a.x) * (p2.y - a.y);
+    return f1 * f2 > 0;
+}
+
 int isblocked(struct world_t *world, int x1, int y1, int x2, int y2) {
     struct point_t a = { x1, y1 };
     struct point_t b = { x2, y2 };
@@ -416,15 +422,17 @@ int isblocked(struct world_t *world, int x1, int y1, int x2, int y2) {
         int s4 = point_online(a, b, p4);
         int sum1 = s1 + s2 + s3 + s4;
 
-        s1 = point_onside(a, b, p1);
-        s2 = point_onside(a, b, p2);
-        s3 = point_onside(a, b, p3);
-        s4 = point_onside(a, b, p4);
+        s1 = same_side(a, b, p1, p2);
+        s2 = same_side(a, b, p2, p3);
+        s3 = same_side(a, b, p3, p4);
+        s4 = same_side(a, b, p4, p1);
         int sum2 = s1 + s2 + s3 + s4;
 
-        if (sum1 == 1 && sum2 != 2) {
+        if (sum1 == 1 && sum2 == 2) {
             // printf("%d %d %d %d %d %d %d\n", y2, x2, sum2, s1, s2, s3, s4);
             types[i] = 2;
+
+            //printf("%d %d %d\n", y2, x2, sum2);
             count++;
         }
     }
@@ -499,7 +507,7 @@ void print_game_board(struct world_t *world) {
         }
     }
 
-    //shadow
+//shadow
     if (world->shadow) {
         for (int row = 0; row < ROWS; row++) {
             for (int col = 0; col < COLS; col++) {

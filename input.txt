@@ -2,4 +2,27 @@
 w 5 4
 s
 u
+d
+s
+s
+a
+a
+w
+w
+w
+d
+d
+d
+s
+s
+s
+s
+a
+a
+a
+a
+w
+w
+w
+w
 q
