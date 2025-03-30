@@ -87,6 +87,22 @@ void setup(struct world_t *world) {
     }
 
     print_board(world->board, world->player_row, world->player_col, world->lives);
+
+    //enter map feature
+    printf("Enter map features:\n");
+    char type;
+    int row, col;
+
+    while (scanf(" %c%d%d", &type, &row, &col) == 3) {
+        if (type == 'w') {
+            world->board[row][col].entity = WALL;
+        } else if (type == 'b') {
+            world->board[row][col].entity = BOULDER;
+        } else if (type == 'g') {
+            world->board[row][col].entity = GEM;
+        }
+    }
+    print_board(world->board, world->player_row, world->player_col, world->lives);
 }
 
 // =============================================================================
