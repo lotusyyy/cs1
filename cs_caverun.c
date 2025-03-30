@@ -107,11 +107,9 @@ void game_loop(struct world_t *world) {
                 world->board[nrow][ncol].entity = EMPTY;
                 world->player_row = nrow;
                 world->player_col = ncol;
-                moved = TRUE;
             } else {
                 world->player_row = nrow;
                 world->player_col = ncol;
-                moved = TRUE;
             }
 
             print_board(world->board, world->player_row, world->player_col, world->lives);
