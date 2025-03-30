@@ -253,6 +253,7 @@ void game_loop(struct world_t *world) {
             }
 
         } else if (command == 'r') {
+            last_dash = FALSE;
             print_board(world->board, world->player_row, world->player_col, world->lives);
         } else if (command == 'p') {
             printf("You have %d point(s)!\n", world->score);
