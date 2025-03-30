@@ -94,12 +94,18 @@ void setup(struct world_t *world) {
     int row, col;
 
     while (scanf(" %c%d%d", &type, &row, &col) == 3) {
-        if (type == 'w') {
-            world->board[row][col].entity = WALL;
-        } else if (type == 'b') {
-            world->board[row][col].entity = BOULDER;
-        } else if (type == 'g') {
-            world->board[row][col].entity = GEM;
+        if (!is_valid_position(row, col)) {
+            printf("Invalid location: position is not on map!\n");
+        } else if (world->board[row][col].entity != DIRT) {
+            printf("Invalid location: tile is occupied!\n");
+        }else{
+            if (type == 'w') {
+                world->board[row][col].entity = WALL;
+            } else if (type == 'b') {
+                world->board[row][col].entity = BOULDER;
+            } else if (type == 'g') {
+                world->board[row][col].entity = GEM;
+            }
         }
     }
     print_board(world->board, world->player_row, world->player_col, world->lives);
