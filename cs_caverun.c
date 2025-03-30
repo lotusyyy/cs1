@@ -412,9 +412,11 @@ int is_neighbor(int x1, int y1, int x2, int y2) {
 void get_blocks(struct world_t *world, int x1, int y1, int x2, int y2,
         struct stat_t *stat) {
     struct point_t point_a = {
-        x1, y1 };
+        x1, y1
+    };
     struct point_t point_b = {
-        x2, y2 };
+        x2, y2
+    };
 
     for (int row = 0; row < ROWS; row++)
         for (int col = 0; col < COLS; col++) {
@@ -426,13 +428,18 @@ void get_blocks(struct world_t *world, int x1, int y1, int x2, int y2,
                 double y = row;
 
                 struct point_t var_p1 = {
-                    x - 0.51, y - 0.51 };
+                    x - 0.51, y - 0.51
+                };
                 struct point_t var_p2 = {
-                    x + 0.51, y - 0.51 };
+                    x + 0.51, y - 0.51
+                };
                 struct point_t var_p3 = {
-                    x + 0.51, y + 0.51 };
+                    x + 0.51, y + 0.51
+
+                };
                 struct point_t var_p4 = {
-                    x - 0.51, y + 0.51 };
+                    x - 0.51, y + 0.51
+                };
 
                 if (intersect(point_a, point_b, var_p1, var_p2)
                         || intersect(point_a, point_b, var_p2, var_p3)
@@ -450,22 +457,28 @@ void get_blocks(struct world_t *world, int x1, int y1, int x2, int y2,
 void get_block_type(struct world_t *world, int x1, int y1, int x2, int y2,
         struct stat_t *stat) {
     struct point_t point_a = {
-        x1, y1 };
+        x1, y1
+    };
     struct point_t point_b = {
-        x2, y2 };
+        x2, y2
+    };
 
     for (int i = 0; i < stat->num; i++) {
         double x = stat->cols[i];
         double y = stat->rows[i];
 
         struct point_t point1 = {
-            x - 0.5, y - 0.5 };
+            x - 0.5, y - 0.5
+        };
         struct point_t point2 = {
-            x + 0.5, y - 0.5 };
+            x + 0.5, y - 0.5
+        };
         struct point_t point3 = {
-            x + 0.5, y + 0.5 };
+            x + 0.5, y + 0.5
+        };
         struct point_t point4 = {
-            x - 0.5, y + 0.5 };
+            x - 0.5, y + 0.5
+        };
 
         int sub_value1 = point_online(point_a, point_b, point1);
         int sub_value2 = point_online(point_a, point_b, point2);
@@ -503,9 +516,11 @@ void get_block_type(struct world_t *world, int x1, int y1, int x2, int y2,
 
 int isblocked(struct world_t *world, int x1, int y1, int x2, int y2) {
     struct point_t point_a = {
-        x1, y1 };
+        x1, y1
+    };
     struct point_t point_b = {
-        x2, y2 };
+        x2, y2
+    };
 
     struct stat_t stat;
     stat.num = 0;
