@@ -676,12 +676,17 @@ void shift(char *buffer) {
 
 void game_loop(struct world_t *world) {
     char buffer[5] = { 0, 0, 0, 0, 0 };
-    char input[20];
+    char input[50];
 
     printf("--- Gameplay Phase ---\n");
 
-    while (!world->win && !world->lost && scanf("%s", input) == 1
+    while (!world->win && !world->lost && fgets(input, 50, stdin)
             && input[0] != 'q') {
+        int len = strlen(input);
+        if (len > 0 && input[len - 1] == '\n') {
+            input[len - 1] = 0;
+        }
+
         char command = input[0];
 
         if (command != 'L') {
@@ -694,7 +699,7 @@ void game_loop(struct world_t *world) {
         } else if (command == 'm') {
             print_statistics(world);
         } else if (command == 'i') {
-            scanf("%lf", &world->radius);
+            sscanf(input + 1, "%lf", &world->radius);
             if (world->radius > 0) {
                 world->illumination = TRUE;
                 printf("Illumination Mode: Activated\n");
@@ -704,7 +709,7 @@ void game_loop(struct world_t *world) {
             }
             print_game_board(world);
         } else if (command == 'g') {
-            scanf(" %c", &world->gravity);
+            sscanf(input + 1, " %c", &world->gravity);
             if (world->gravity == 'w') {
                 printf("Gravity now pulls UP!\n");
             }
@@ -720,8 +725,6 @@ void game_loop(struct world_t *world) {
 
             handler_bounder(world);
         } else if (command == 'L') {
-            //printf("buffer is %s\n", buffer);
-
             if (strcmp("wdsa", buffer) == 0) {
                 world->mode = GAME;
                 printf("Game Of Lava: Activated\n");
