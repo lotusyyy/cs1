@@ -52,9 +52,13 @@ struct world_t {
     char gravity;
 
     int win;
+    int lost;
+
     int score;
     int player_row;
     int player_col;
+    int player_row_start;
+    int player_col_start;
 
     int last_dash;
 };
@@ -244,7 +248,7 @@ void boulder_move_to(struct world_t *world, int row1, int col1, int row2, int co
     }
 }
 
-void boulder_move(struct world_t *world) {
+int boulder_move(struct world_t *world) {
     int drow, dcol;
     get_offset(world->gravity, &drow, &dcol);
 
@@ -279,6 +283,32 @@ void boulder_move(struct world_t *world) {
             }
         }
     }
+
+    for (int row = 0; row < ROWS; row++) {
+        for (int col = 0; col < COLS; col++) {
+            if (world->board[row][col].entity == BOULDER && row == world->player_row && col == world->player_col) {
+                return TRUE;
+            }
+        }
+    }
+    return FALSE;
+}
+
+int spawn_player(struct world_t *world) {
+    int row = world->player_row_start;
+    int col = world->player_col_start;
+    int blocked = TRUE;
+
+    if (world->board[row][col].entity == EMPTY) {
+        printf("Respawning!\n");
+        world->player_row = world->player_row_start;
+        world->player_col = world->player_col_start;
+        blocked = FALSE;
+    } else {
+        printf("Respawn blocked! Game over. Final score: %d points.\n", world->score);
+    }
+
+    return blocked;
 }
 
 void step(struct world_t *world, const char *input) {
@@ -299,11 +329,29 @@ void step(struct world_t *world, const char *input) {
         }
     }
 
-    boulder_move(world);
+    int lose = boulder_move(world);
+    int blocked = FALSE;
+
+    if (lose) {
+        world->lives--;
+        if (world->lives == 0) {
+            world->lost = TRUE;
+        } else {
+            blocked = spawn_player(world);
+        }
+    }
+
+    if (world->lost) {
+        printf("Game Lost! You scored %d points!\n", world->score);
+    }
 
     print_board(world->board, world->player_row, world->player_col, world->lives);
     if (world->win) {
         printf("You Win! Final Score: %d point(s)!\n", world->score);
+    }
+
+    if (blocked) {
+        world->lost = TRUE;
     }
 }
 
@@ -312,7 +360,7 @@ void game_loop(struct world_t *world) {
 
     printf("--- Gameplay Phase ---\n");
 
-    while (scanf("%s", input) == 1 && input[0] != 'q' && !world->win) {
+    while (!world->win && !world->lost && scanf("%s", input) == 1 && input[0] != 'q') {
         char command = input[0];
         if (command == 'p') {
             printf("You have %d point(s)!\n", world->score);
@@ -395,6 +443,7 @@ void setup_feature(struct world_t *world) {
 
 void setup(struct world_t *world) {
     world->win = FALSE;
+    world->lost = FALSE;
     world->score = 0;
     world->lives = INITIAL_LIVES;
     world->num_collectible = 0;
@@ -413,6 +462,9 @@ void setup(struct world_t *world) {
         printf("Enter the player's starting position: ");
         scanf("%d%d", &world->player_row, &world->player_col);
     }
+    world->player_row_start = world->player_row;
+    world->player_col_start = world->player_col;
+
     print_board(world->board, world->player_row, world->player_col, world->lives);
 
     setup_feature(world);
