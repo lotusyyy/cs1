@@ -690,7 +690,7 @@ void game_loop(struct world_t *world) {
 
     while (!world->win && !world->lost && fgets(input, 50, stdin)
             && input[0] != 'q') {
-
+        trim(input);
         char command = input[0];
 
         if (command != 'L') {
