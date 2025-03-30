@@ -75,6 +75,11 @@ struct world_t {
     enum lava_mode mode;
 };
 
+struct point_t {
+    double x;
+    double y;
+};
+
 struct stat_t {
     int rows[ROWS * COLS];
     int cols[ROWS * COLS];
@@ -83,13 +88,6 @@ struct stat_t {
     struct point_t end[ROWS * COLS];
     int num;
 };
-
-
-struct point_t {
-    double x;
-    double y;
-};
-
 
 // Provided Function Prototypes
 void initialise_board(struct tile_t board[ROWS][COLS]);
