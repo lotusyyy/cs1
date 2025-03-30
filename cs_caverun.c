@@ -423,16 +423,16 @@ void handler_bounder(struct world_t *world) {
         }
     }
 
+    if (!world->win && !world->lost && !blocked) {
+        move_lavas(world);
 
-    move_lavas(world);
-
-    if (world->lavas[world->player_row][world->player_col]
-                                        && !world->win && !world->lost && !blocked) {
-        world->lives--;
-        if (world->lives == 0) {
-            world->lost = TRUE;
-        } else {
-            blocked = spawn_player(world);
+        if (world->lavas[world->player_row][world->player_col]) {
+            world->lives--;
+            if (world->lives == 0) {
+                world->lost = TRUE;
+            } else {
+                blocked = spawn_player(world);
+            }
         }
     }
 
