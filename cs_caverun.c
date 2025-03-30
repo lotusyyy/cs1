@@ -674,6 +674,14 @@ void shift(char *buffer) {
     }
 }
 
+void trim(char *input) {
+    int len = strlen(input);
+    while (len > 0 && (input[len - 1] == '\n' || input[len - 1] == '\r')) {
+        input[len - 1] = 0;
+        len = strlen(input);
+    }
+}
+
 void game_loop(struct world_t *world) {
     char buffer[5] = { 0, 0, 0, 0, 0 };
     char input[50];
@@ -682,11 +690,6 @@ void game_loop(struct world_t *world) {
 
     while (!world->win && !world->lost && fgets(input, 50, stdin)
             && input[0] != 'q') {
-        int len = strlen(input);
-        while (len > 0 && (input[len - 1] == '\n' ||  input[len - 1] == '\r')) {
-            input[len - 1] = 0;
-            len = strlen(input);
-        }
 
         char command = input[0];
 
@@ -750,6 +753,7 @@ void game_loop(struct world_t *world) {
         }
     }
 
+    trim(input);
     if (strcmp("q", input) == 0) {
         printf("--- Quitting Game ---\n");
     }
