@@ -61,6 +61,7 @@ struct world_t {
     int lost;
 
     int illumination;
+    int shadow;
     double radius;
 
     int score;
@@ -334,8 +335,69 @@ int spawn_player(struct world_t *world) {
     return blocked;
 }
 
+int is_opaque(struct world_t *world, int x, double y) {
+    int target_row = 0;
+    for (int row = 0; row < ROWS; row++) {
+        if (abs(row - y) < 0.5) {
+
+        }
+    }
+}
+
+struct point_t {
+    double x;
+    double y;
+};
+
+int ccw(struct point_t a, struct point_t b, struct point_t c) {
+    return (c.y - a.y) * (b.x - a.x) > (b.y - a.y) * (c.x - a.x);
+}
+
+int intersect(struct point_t a, struct point_t b, struct point_t c, struct point_t d) {
+    return ccw(a, c, d) != ccw(b, c, d) && ccw(a, b, c) != ccw(a, b, d);
+}
+
+int isblocked(struct world_t *world, int x1, int y1, int x2, int y2) {
+    struct point_t a = { x1, y1 };
+    struct point_t b = { x2, y2 };
+
+    int rows[ROWS * COLS];
+    int cols[ROWS * COLS];
+    int types[ROWS * COLS];
+    int num = 0;
+
+    for (int row = 0; row < ROWS; row++) {
+        for (int col = 0; col < COLS; col++) {
+            double distance = sqrt(pow(row - world->player_row, 2) + pow(col - world->player_col, 2));
+            if ((world->board[row][col].entity == WALL || world->board[row][col].entity == BOULDER
+                    || world->board[row][col].entity == GEM) && !(row == y2 && col == x2)) {
+                double x = col;
+                double y = row;
+
+                struct point_t p1 = { x - 0.5, y - 0.5 };
+                struct point_t p2 = { x + 0.5, y - 0.5 };
+                struct point_t p3 = { x + 0.5, y + 0.5 };
+                struct point_t p4 = { x - 0.5, y + 0.5 };
+
+                if (intersect(a, b, p1, p2) || intersect(a, b, p2, p3) || intersect(a, b, p3, p4)
+                        || intersect(a, b, p4, p1)) {
+                    rows[num] = row;
+                    cols[num] = col;
+                    types[num] = 1;
+                    num++;
+                }
+            }
+        }
+    }
+
+    return num > 0;
+}
+
 void print_game_board(struct world_t *world) {
     struct tile_t board[ROWS][COLS];
+
+    int y1 = world->player_row;
+    int x1 = world->player_col;
 
     for (int row = 0; row < ROWS; row++) {
         for (int col = 0; col < COLS; col++) {
@@ -349,6 +411,17 @@ void print_game_board(struct world_t *world) {
                 board[row][col].entity = HIDDEN;
             } else {
                 board[row][col].entity = world->board[row][col].entity;
+            }
+        }
+    }
+
+    //shadow
+    for (int row = 0; row < ROWS; row++) {
+        for (int col = 0; col < COLS; col++) {
+            double distance = sqrt(pow(row - world->player_row, 2) + pow(col - world->player_col, 2));
+            if (board[row][col].entity != LAVA && board[row][col].entity != HIDDEN
+                    && isblocked(world, x1, y1, col, row)) {
+                board[row][col].entity = HIDDEN;
             }
         }
     }
@@ -535,6 +608,14 @@ void game_loop(struct world_t *world) {
 
             shift(buffer);
             buffer[3] = command;
+        } else if (command == 'u') {
+            if (world->shadow) {
+                printf("Shadow Mode: Deactivated\n");
+            } else {
+                printf("Shadow Mode: Activated\n");
+            }
+            world->shadow = !world->shadow;
+            print_game_board(world);
         } else {
             step(world, input);
         }
@@ -572,7 +653,7 @@ int add_walls(struct world_t *world, int row1, int col1, int row2, int col2) {
 }
 
 void setup_feature(struct world_t *world) {
-    //enter map feature
+//enter map feature
     printf("Enter map features:\n");
     char type;
     int row, col, row2, col2;
@@ -625,6 +706,7 @@ void setup(struct world_t *world) {
     world->gravity = 's';
     world->mode = NONE;
     world->radius = 0;
+    world->shadow = FALSE;
 
     initialise_board(world->board);
 
