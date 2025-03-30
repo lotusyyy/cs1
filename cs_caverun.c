@@ -1,5 +1,5 @@
 // cs_caverun.c
-// Written by <INSERT YOUR FULL NAME> <INSERT YOUR ZID> on <INSERT DATE>
+// Written by <INSERT YOUR FULL NAME> z5621509 on <INSERT DATE>
 //
 // Description: This file implements a simplification of game mechanics
 //              explored by the 1980s 8-bit video game Boulder Dash.
@@ -145,13 +145,13 @@ int count_entities(struct world_t *world, enum entity type) {
 
 void try_unlock(struct world_t *world) {
     if (count_entities(world, GEM) == 0)
-        for (int row = 0; row < ROWS; row++) {
-            for (int col = 0; col < COLS; col++) {
-                if (world->board[row][col].entity == EXIT_LOCKED) {
-                    world->board[row][col].entity = EXIT_UNLOCKED;
-                }
+    for (int row = 0; row < ROWS; row++) {
+        for (int col = 0; col < COLS; col++) {
+            if (world->board[row][col].entity == EXIT_LOCKED) {
+                world->board[row][col].entity = EXIT_UNLOCKED;
             }
         }
+    }
 }
 
 void get_offset(char command, int *drow, int *dcol) {
@@ -409,8 +409,10 @@ int is_neighbor(int x1, int y1, int x2, int y2) {
 
 void get_blocks(struct world_t *world, int x1, int y1, int x2, int y2,
         struct stat_t *stat) {
-    struct point_t point_a = { x1, y1 };
-    struct point_t point_b = { x2, y2 };
+    struct point_t point_a = {
+            x1, y1 };
+    struct point_t point_b = {
+            x2, y2 };
 
     for (int row = 0; row < ROWS; row++)
         for (int col = 0; col < COLS; col++) {
@@ -421,10 +423,14 @@ void get_blocks(struct world_t *world, int x1, int y1, int x2, int y2,
                 double x = col;
                 double y = row;
 
-                struct point_t var_p1 = { x - 0.51, y - 0.51 };
-                struct point_t var_p2 = { x + 0.51, y - 0.51 };
-                struct point_t var_p3 = { x + 0.51, y + 0.51 };
-                struct point_t var_p4 = { x - 0.51, y + 0.51 };
+                struct point_t var_p1 = {
+                        x - 0.51, y - 0.51 };
+                struct point_t var_p2 = {
+                        x + 0.51, y - 0.51 };
+                struct point_t var_p3 = {
+                        x + 0.51, y + 0.51 };
+                struct point_t var_p4 = {
+                        x - 0.51, y + 0.51 };
 
                 if (intersect(point_a, point_b, var_p1, var_p2)
                         || intersect(point_a, point_b, var_p2, var_p3)
@@ -441,17 +447,23 @@ void get_blocks(struct world_t *world, int x1, int y1, int x2, int y2,
 
 void get_block_type(struct world_t *world, int x1, int y1, int x2, int y2,
         struct stat_t *stat) {
-    struct point_t point_a = { x1, y1 };
-    struct point_t point_b = { x2, y2 };
+    struct point_t point_a = {
+            x1, y1 };
+    struct point_t point_b = {
+            x2, y2 };
 
     for (int i = 0; i < stat->num; i++) {
         double x = stat->cols[i];
         double y = stat->rows[i];
 
-        struct point_t point1 = { x - 0.5, y - 0.5 };
-        struct point_t point2 = { x + 0.5, y - 0.5 };
-        struct point_t point3 = { x + 0.5, y + 0.5 };
-        struct point_t point4 = { x - 0.5, y + 0.5 };
+        struct point_t point1 = {
+                x - 0.5, y - 0.5 };
+        struct point_t point2 = {
+                x + 0.5, y - 0.5 };
+        struct point_t point3 = {
+                x + 0.5, y + 0.5 };
+        struct point_t point4 = {
+                x - 0.5, y + 0.5 };
 
         int sub_value1 = point_online(point_a, point_b, point1);
         int sub_value2 = point_online(point_a, point_b, point2);
@@ -488,8 +500,10 @@ void get_block_type(struct world_t *world, int x1, int y1, int x2, int y2,
 }
 
 int isblocked(struct world_t *world, int x1, int y1, int x2, int y2) {
-    struct point_t point_a = { x1, y1 };
-    struct point_t point_b = { x2, y2 };
+    struct point_t point_a = {
+            x1, y1 };
+    struct point_t point_b = {
+            x2, y2 };
 
     struct stat_t stat;
     stat.num = 0;
@@ -553,7 +567,6 @@ void print_game_board(struct world_t *world) {
                         && board[row][col].entity != HIDDEN
                         && isblocked(world, var_x1, var_y1, col, row))
                     board[row][col].entity = HIDDEN;
-
             }
         }
     }
@@ -573,9 +586,8 @@ int count_neighbors(struct world_t *world, int row, int col) {
                 next_row = (next_row + ROWS) % ROWS;
                 next_col = (next_col + COLS) % COLS;
 
-                if (world->lavas[next_row][next_col]) {
+                if (world->lavas[next_row][next_col])
                     sum++;
-                }
             }
         }
     }
@@ -588,24 +600,24 @@ void move_lavas(struct world_t *world) {
 
     for (int row = 0; row < ROWS; row++)
         for (int col = 0; col < COLS; col++) {
-            next_lavas[row][col] = world->lavas[row][col];
-            int neighbors = count_neighbors(world, row, col);
-            if (world->mode == GAME) {
-                if (!world->lavas[row][col]) {
-                    next_lavas[row][col] = neighbors == 3;
-                } else if (neighbors < 2 || neighbors > 3) {
-                    next_lavas[row][col] = FALSE;
-                } else {
-                    next_lavas[row][col] = TRUE;
-                }
-            } else if (world->mode == SEED) {
-                if (!world->lavas[row][col]) {
-                    next_lavas[row][col] = neighbors == 2;
-                } else {
-                    next_lavas[row][col] = FALSE;
-                }
+        next_lavas[row][col] = world->lavas[row][col];
+        int neighbors = count_neighbors(world, row, col);
+        if (world->mode == GAME) {
+            if (!world->lavas[row][col]) {
+                next_lavas[row][col] = neighbors == 3;
+            } else if (neighbors < 2 || neighbors > 3) {
+                next_lavas[row][col] = FALSE;
+            } else {
+                next_lavas[row][col] = TRUE;
+            }
+        } else if (world->mode == SEED) {
+            if (!world->lavas[row][col]) {
+                next_lavas[row][col] = neighbors == 2;
+            } else {
+                next_lavas[row][col] = FALSE;
             }
         }
+    }
 
     for (int row = 0; row < ROWS; row++) {
         for (int col = 0; col < COLS; col++) {
@@ -809,7 +821,7 @@ int add_walls(struct world_t *world, int row1, int col1, int row2, int col2) {
 }
 
 void setup_feature(struct world_t *world) {
-//enter map feature
+    // enter map feature
     printf("Enter map features:\n");
     char type;
     int row, col, row2, col2;
