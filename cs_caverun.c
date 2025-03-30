@@ -229,6 +229,10 @@ void print_statistics(struct world_t *world) {
         }
     }
 
+    if (world->mode != NONE) {
+        maximum_points_remaining *= 10;
+    }
+
     completion_percentage = 100.0 * world->num_collected / world->num_collectible;
     print_map_statistics(number_of_dirt_tiles, number_of_gem_tiles, number_of_boulder_tiles, completion_percentage,
             maximum_points_remaining);
