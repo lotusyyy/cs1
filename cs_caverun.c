@@ -75,6 +75,15 @@ struct world_t {
     enum lava_mode mode;
 };
 
+struct stat_t {
+    int rows[ROWS * COLS];
+    int cols[ROWS * COLS];
+    int types[ROWS * COLS];
+    struct point_t start[ROWS * COLS];
+    struct point_t end[ROWS * COLS];
+    int num;
+};
+
 // Provided Function Prototypes
 void initialise_board(struct tile_t board[ROWS][COLS]);
 void print_board(struct tile_t board[ROWS][COLS], int player_row,
@@ -365,26 +374,18 @@ int side_on(struct point_t a, struct point_t b, struct point_t c) {
 }
 
 int point_online(struct point_t a, struct point_t b, struct point_t c) {
-    double m = (b.y - a.y) / (b.x - a.x);
-    double n = b.y - m * b.x;
-    double v = m * c.x + n;
+    double var_m = (b.y - a.y) / (b.x - a.x);
+    double var_n = b.y - var_m * b.x;
+    double var_v = var_m * c.x + var_n;
 
-    return fabs(c.y - v) < 0.0001;
-}
-
-int point_onside(struct point_t a, struct point_t b, struct point_t c) {
-    double m = (b.y - a.y) / (b.x - a.x);
-    double n = b.y - m * b.x;
-    double v = m * c.x + n;
-
-    return v < c.y;
+    return fabs(c.y - var_v) < 0.0001;
 }
 
 int same_side(struct point_t a, struct point_t b, struct point_t p1,
         struct point_t p2) {
-    double f1 = (a.y - b.y) * (p1.x - a.x) + (b.x - a.x) * (p1.y - a.y);
-    double f2 = (a.y - b.y) * (p2.x - a.x) + (b.x - a.x) * (p2.y - a.y);
-    return f1 * f2 > 0;
+    double var_f1 = (a.y - b.y) * (p1.x - a.x) + (b.x - a.x) * (p1.y - a.y);
+    double var_f2 = (a.y - b.y) * (p2.x - a.x) + (b.x - a.x) * (p2.y - a.y);
+    return var_f1 * var_f2 > 0;
 }
 
 int is_wall(struct world_t *world, int row1, int col1) {
@@ -407,16 +408,10 @@ int is_neighbor(int x1, int y1, int x2, int y2) {
     return distance == 2 && x1 != x2 && y1 != y2;
 }
 
-int isblocked(struct world_t *world, int x1, int y1, int x2, int y2) {
-    struct point_t a = { x1, y1 };
-    struct point_t b = { x2, y2 };
-
-    int rows[ROWS * COLS];
-    int cols[ROWS * COLS];
-    int types[ROWS * COLS];
-    struct point_t start[ROWS * COLS];
-    struct point_t end[ROWS * COLS];
-    int num = 0;
+void get_blocks(struct world_t *world, int x1, int y1, int x2, int y2,
+        struct stat_t *stat) {
+    struct point_t point_a = { x1, y1 };
+    struct point_t point_b = { x2, y2 };
 
     for (int row = 0; row < ROWS; row++) {
         for (int col = 0; col < COLS; col++) {
@@ -427,69 +422,86 @@ int isblocked(struct world_t *world, int x1, int y1, int x2, int y2) {
                 double x = col;
                 double y = row;
 
-                struct point_t p1 = { x - 0.51, y - 0.51 };
-                struct point_t p2 = { x + 0.51, y - 0.51 };
-                struct point_t p3 = { x + 0.51, y + 0.51 };
-                struct point_t p4 = { x - 0.51, y + 0.51 };
+                struct point_t var_p1 = { x - 0.51, y - 0.51 };
+                struct point_t var_p2 = { x + 0.51, y - 0.51 };
+                struct point_t var_p3 = { x + 0.51, y + 0.51 };
+                struct point_t var_p4 = { x - 0.51, y + 0.51 };
 
-                if (intersect(a, b, p1, p2) || intersect(a, b, p2, p3)
-                        || intersect(a, b, p3, p4) || intersect(a, b, p4, p1)) {
-                    rows[num] = row;
-                    cols[num] = col;
-                    types[num] = 0;
-                    num++;
+                if (intersect(point_a, point_b, var_p1, var_p2)
+                        || intersect(point_a, point_b, var_p2, var_p3)
+                        || intersect(point_a, point_b, var_p3, var_p4)
+                        || intersect(point_a, point_b, var_p4, var_p1)) {
+                    stat->rows[stat->num] = row;
+                    stat->cols[stat->num] = col;
+                    stat->types[stat->num] = 0;
+                    stat->num++;
                 }
             }
         }
     }
+}
 
-    for (int i = 0; i < num; i++) {
-        double x = cols[i];
-        double y = rows[i];
+void get_block_type(struct world_t *world, int x1, int y1, int x2, int y2,
+        struct stat_t *stat) {
+    struct point_t point_a = { x1, y1 };
+    struct point_t point_b = { x2, y2 };
 
-        struct point_t p1 = { x - 0.5, y - 0.5 };
-        struct point_t p2 = { x + 0.5, y - 0.5 };
-        struct point_t p3 = { x + 0.5, y + 0.5 };
-        struct point_t p4 = { x - 0.5, y + 0.5 };
+    for (int i = 0; i < stat->num; i++) {
+        double x = stat->cols[i];
+        double y = stat->rows[i];
 
-        int s1 = point_online(a, b, p1);
-        int s2 = point_online(a, b, p2);
-        int s3 = point_online(a, b, p3);
-        int s4 = point_online(a, b, p4);
-        int sum1 = s1 + s2 + s3 + s4;
+        struct point_t point1 = { x - 0.5, y - 0.5 };
+        struct point_t point2 = { x + 0.5, y - 0.5 };
+        struct point_t point3 = { x + 0.5, y + 0.5 };
+        struct point_t point4 = { x - 0.5, y + 0.5 };
 
-        s1 = same_side(a, b, p1, p2);
-        s2 = same_side(a, b, p2, p3);
-        s3 = same_side(a, b, p3, p4);
-        s4 = same_side(a, b, p4, p1);
-        int sum2 = s1 + s2 + s3 + s4;
+        int sub_value1 = point_online(point_a, point_b, point1);
+        int sub_value2 = point_online(point_a, point_b, point2);
+        int sub_value3 = point_online(point_a, point_b, point3);
+        int sub_value4 = point_online(point_a, point_b, point4);
+        int sum1 = sub_value1 + sub_value2 + sub_value3 + sub_value4;
+
+        sub_value1 = same_side(point_a, point_b, point1, point2);
+        sub_value2 = same_side(point_a, point_b, point2, point3);
+        sub_value3 = same_side(point_a, point_b, point3, point4);
+        sub_value4 = same_side(point_a, point_b, point4, point1);
+        int sum2 = sub_value1 + sub_value2 + sub_value3 + sub_value4;
 
         if (sum1 == 1 && sum2 == 2) {
-            types[i] = 1;
-
-            if (s1) {
-                start[i] = p1;
-                end[i] = p2;
+            stat->types[i] = 1;
+            if (sub_value1) {
+                stat->start[i] = point1;
+                stat->end[i] = point2;
             }
-
-            if (s2) {
-                start[i] = p2;
-                end[i] = p3;
+            if (sub_value2) {
+                stat->start[i] = point2;
+                stat->end[i] = point3;
             }
-            if (s3) {
-                start[i] = p3;
-                end[i] = p4;
+            if (sub_value3) {
+                stat->start[i] = point3;
+                stat->end[i] = point4;
             }
-            if (s4) {
-                start[i] = p4;
-                end[i] = p1;
+            if (sub_value4) {
+                stat->start[i] = point4;
+                stat->end[i] = point1;
             }
         }
     }
+}
+
+int isblocked(struct world_t *world, int x1, int y1, int x2, int y2) {
+    struct point_t point_a = { x1, y1 };
+    struct point_t point_b = { x2, y2 };
+
+    struct stat_t stat;
+    stat.num = 0;
+
+    get_blocks(world, x1, y1, x2, y2, &stat);
+    get_block_type(world, x1, y1, x2, y2, &stat);
 
     int count = 0;
-    for (int i = 0; i < num; i++) {
-        if (types[i] == 0) {
+    for (int i = 0; i < stat.num; i++) {
+        if (stat.types[i] == 0) {
             count++;
         }
     }
@@ -499,10 +511,10 @@ int isblocked(struct world_t *world, int x1, int y1, int x2, int y2) {
     }
 
     count = 0;
-    for (int i = 0; i < num; i++) {
-        for (int j = 0; j < num; j++) {
-            if (types[i] == 1 && types[j] == 1 && i != j) {
-                if (!same_side(a, b, start[i], end[j])) {
+    for (int i = 0; i < stat.num; i++) {
+        for (int j = 0; j < stat.num; j++) {
+            if (stat.types[i] == 1 && stat.types[j] == 1 && i != j) {
+                if (!same_side(point_a, point_b, stat.start[i], stat.end[j])) {
                     count++;
                 }
             }
@@ -649,7 +661,9 @@ void handler_bounder(struct world_t *world) {
 void step(struct world_t *world, const char *input) {
     char command = input[0];
 
-    if (command == 'w' || command == 'a' || command == 's' || command == 'd') {
+    int tag = command == 'w' || command == 'a' || command == 's'
+            || command == 'd';
+    if (tag) {
         world->last_dash = FALSE;
         move_player(world, command);
     } else if (command == 'r') {
@@ -682,6 +696,45 @@ void trim(char *input) {
     }
 }
 
+void illumination(struct world_t *world) {
+    if (world->radius > 0) {
+        world->illumination = TRUE;
+        printf("Illumination Mode: Activated\n");
+    } else {
+        world->illumination = FALSE;
+        printf("Illumination Mode: Deactivated\n");
+    }
+    print_game_board(world);
+}
+
+void set_gravity(struct world_t *world) {
+    if (world->gravity == 'w') {
+        printf("Gravity now pulls UP!\n");
+    }
+    if (world->gravity == 'a') {
+        printf("Gravity now pulls LEFT!\n");
+    }
+    if (world->gravity == 's') {
+        printf("Gravity now pulls DOWN!\n");
+    }
+    if (world->gravity == 'd') {
+        printf("Gravity now pulls RIGHT!\n");
+    }
+
+    handler_bounder(world);
+}
+
+void set_lava(struct world_t *world, const char *buffer) {
+    if (strcmp("wdsa", buffer) == 0) {
+        world->mode = GAME;
+        printf("Game Of Lava: Activated\n");
+    }
+    if (strcmp("wasd", buffer) == 0) {
+        world->mode = SEED;
+        printf("Lava Seeds: Activated\n");
+    }
+}
+
 void game_loop(struct world_t *world) {
     char buffer[5] = { 0, 0, 0, 0, 0 };
     char input[50];
@@ -705,40 +758,12 @@ void game_loop(struct world_t *world) {
             print_statistics(world);
         } else if (command == 'i') {
             sscanf(input + 1, "%lf", &world->radius);
-            if (world->radius > 0) {
-                world->illumination = TRUE;
-                printf("Illumination Mode: Activated\n");
-            } else {
-                world->illumination = FALSE;
-                printf("Illumination Mode: Deactivated\n");
-            }
-            print_game_board(world);
+            illumination(world);
         } else if (command == 'g') {
             sscanf(input + 1, " %c", &world->gravity);
-            if (world->gravity == 'w') {
-                printf("Gravity now pulls UP!\n");
-            }
-            if (world->gravity == 'a') {
-                printf("Gravity now pulls LEFT!\n");
-            }
-            if (world->gravity == 's') {
-                printf("Gravity now pulls DOWN!\n");
-            }
-            if (world->gravity == 'd') {
-                printf("Gravity now pulls RIGHT!\n");
-            }
-
-            handler_bounder(world);
+            set_gravity(world);
         } else if (command == 'L') {
-            if (strcmp("wdsa", buffer) == 0) {
-                world->mode = GAME;
-                printf("Game Of Lava: Activated\n");
-            }
-            if (strcmp("wasd", buffer) == 0) {
-                world->mode = SEED;
-                printf("Lava Seeds: Activated\n");
-            }
-
+            set_lava(world, buffer);
             shift(buffer);
             buffer[3] = command;
         } else if (command == 'u') {
