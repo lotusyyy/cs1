@@ -357,7 +357,7 @@ int point_online(struct point_t a, struct point_t b, struct point_t c) {
     double n = b.y - m * b.x;
     double v = m * c.x + n;
 
-    return abs(c.y - v) < 0.0001;
+    return fabs(c.y - v) < 0.0001;
 }
 
 int point_onside(struct point_t a, struct point_t b, struct point_t c) {
