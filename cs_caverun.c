@@ -338,7 +338,7 @@ void print_game_board(struct world_t *world) {
             double distance = sqrt(pow(row - world->player_row, 2) + pow(col - world->player_col, 2));
             if (world->lavas[row][col]) {
                 board[row][col].entity = LAVA;
-                printf("%d %d is lava\n", row, col);
+                //printf("%d %d is lava\n", row, col);
             } else if (distance <= world->radius) {
                 board[row][col].entity = world->board[row][col].entity;
             } else if (world->illumination) {
