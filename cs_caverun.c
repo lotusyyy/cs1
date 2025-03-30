@@ -390,14 +390,13 @@ int isblocked(struct world_t *world, int x1, int y1, int x2, int y2) {
         struct point_t p3 = { x + 0.5, y + 0.5 };
         struct point_t p4 = { x - 0.5, y + 0.5 };
 
-        if (intersect(a, b, p1, p1) || intersect(a, b, p2, p2) || intersect(a, b, p3, p3)
-                || intersect(a, b, p4, p4)) {
+        if (intersect(a, b, p1, p1) || intersect(a, b, p2, p2) || intersect(a, b, p3, p3) || intersect(a, b, p4, p4)) {
             types[i] = 2;
             count++;
         }
     }
 
-    if(num > 0 && types[0] == 1){
+    if (num > 0 && types[0] == 1) {
 
     }
 
@@ -427,11 +426,13 @@ void print_game_board(struct world_t *world) {
     }
 
     //shadow
-    for (int row = 0; row < ROWS; row++) {
-        for (int col = 0; col < COLS; col++) {
-            if (board[row][col].entity != LAVA && board[row][col].entity != HIDDEN
-                    && isblocked(world, x1, y1, col, row)) {
-                board[row][col].entity = HIDDEN;
+    if (world->shadow) {
+        for (int row = 0; row < ROWS; row++) {
+            for (int col = 0; col < COLS; col++) {
+                if (board[row][col].entity != LAVA && board[row][col].entity != HIDDEN
+                        && isblocked(world, x1, y1, col, row)) {
+                    board[row][col].entity = HIDDEN;
+                }
             }
         }
     }
