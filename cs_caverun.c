@@ -401,7 +401,7 @@ int isblocked(struct world_t *world, int x1, int y1, int x2, int y2) {
 
     }
 
-    return count > 0;
+    return num - count > 0;
 }
 
 void print_game_board(struct world_t *world) {
