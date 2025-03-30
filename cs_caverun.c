@@ -348,8 +348,24 @@ int intersect(struct point_t a, struct point_t b, struct point_t c, struct point
     return ccw(a, c, d) != ccw(b, c, d) && ccw(a, b, c) != ccw(a, b, d);
 }
 
-int intersect2(struct point_t a, struct point_t b, struct point_t c, struct point_t d) {
-    return (b.y - a.y) / (b.x - a.x) == (c.y - a.y) / (d.x - a.x);
+int side_on(struct point_t a, struct point_t b, struct point_t c) {
+    return ccw(a, c, c) != ccw(b, c, c) && ccw(a, b, c) != ccw(a, b, c);
+}
+
+int point_online(struct point_t a, struct point_t b, struct point_t c) {
+    double m = (b.y - a.y) / (b.x - a.x);
+    double n = b.y - m * b.x;
+    double v = m * c.x + n;
+
+    return abs(c.y - v) < 0.0001;
+}
+
+int point_onside(struct point_t a, struct point_t b, struct point_t c) {
+    double m = (b.y - a.y) / (b.x - a.x);
+    double n = b.y - m * b.x;
+    double v = m * c.x + n;
+
+    return v < c.y;
 }
 
 int isblocked(struct world_t *world, int x1, int y1, int x2, int y2) {
@@ -377,7 +393,7 @@ int isblocked(struct world_t *world, int x1, int y1, int x2, int y2) {
                         || intersect(a, b, p4, p1)) {
                     rows[num] = row;
                     cols[num] = col;
-                    types[num] = 1;
+                    types[num] = 0;
                     num++;
                 }
             }
@@ -394,13 +410,65 @@ int isblocked(struct world_t *world, int x1, int y1, int x2, int y2) {
         struct point_t p3 = { x + 0.5, y + 0.5 };
         struct point_t p4 = { x - 0.5, y + 0.5 };
 
-        if (intersect2(a, b, p1, p1) + intersect2(a, b, p2, p2) + intersect2(a, b, p3, p3) + intersect2(a, b, p4, p4)
-                == 1) {
+        int s1 = point_online(a, b, p1);
+        int s2 = point_online(a, b, p2);
+        int s3 = point_online(a, b, p3);
+        int s4 = point_online(a, b, p4);
+        int sum1 = s1 + s2 + s3 + s4;
 
+        s1 = point_onside(a, b, p1);
+        s2 = point_onside(a, b, p2);
+        s3 = point_onside(a, b, p3);
+        s4 = point_onside(a, b, p4);
+        int sum2 = s1 + s2 + s3 + s4;
+
+        if (sum1 == 1 && sum2 != 2) {
+            //printf("%d %d %d %d %d %d %d\n", y2, x2, sum2, s1, s2, s3, s4);
             types[i] = 2;
             count++;
         }
     }
+
+    /*
+     int count = 0;
+     for (int i = 0; i < num; i++) {
+     double x = cols[i];
+     double y = rows[i];
+
+     struct point_t p1 = { x - 0.5, y - 0.5 };
+     struct point_t p2 = { x + 0.5, y - 0.5 };
+     struct point_t p3 = { x + 0.5, y + 0.5 };
+     struct point_t p4 = { x - 0.5, y + 0.5 };
+
+     int dir = 1;
+     if (b.x - a.x < 0) {
+     dir = -1;
+     }
+
+     for (double cx = a.x + 0.5; cx < b.x; cx += 1) {
+
+     }
+
+     int s1 = side(a, b, p1);
+     int s2 = side(a, b, p2);
+     int s3 = side(a, b, p3);
+     int s4 = side(a, b, p4);
+     int sum1 = s1 + s2 + s3 + s4;
+
+     int o1 = intersect(a, b, p1, p1);
+     int o2 = intersect(a, b, p2, p2);
+     int o3 = intersect(a, b, p3, p3);
+     int o4 = intersect(a, b, p4, p4);
+     int sum2 = o1 + o2 + o3 + o4;
+
+     printf("sum2 %d\n", sum2);
+
+     if (sum1 == 3) {
+     types[i] = 2;
+     count++;
+     }
+     }
+     */
 
     if (num > 0 && types[0] == 1) {
 
