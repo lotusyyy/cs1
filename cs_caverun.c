@@ -520,7 +520,7 @@ void game_loop(struct world_t *world) {
 
             handler_bounder(world);
         } else if (command == 'L') {
-            printf("buffer is %s\n", buffer);
+            //printf("buffer is %s\n", buffer);
 
             if (strcmp("wdsa", buffer) == 0) {
                 world->mode = GAME;
