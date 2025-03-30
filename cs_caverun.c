@@ -109,15 +109,13 @@ void game_loop(struct world_t *world) {
                 world->player_row = nrow;
                 world->player_col = ncol;
                 moved = TRUE;
-            } else  {
+            } else {
                 world->player_row = nrow;
                 world->player_col = ncol;
                 moved = TRUE;
             }
 
-            if (moved) {
-                print_board(world->board, world->player_row, world->player_col, world->lives);
-            }
+            print_board(world->board, world->player_row, world->player_col, world->lives);
         } else if (command == 'r') {
             print_board(world->board, world->player_row, world->player_col, world->lives);
         }
