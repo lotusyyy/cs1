@@ -75,7 +75,7 @@ int is_valid_position(int row, int col) {
 
 int add_walls(struct world_t *world, int row1, int col1, int row2, int col2) {
     for (int row = row1; row <= row2; row++) {
-        for (int col = col1; col < col2; col++) {
+        for (int col = col1; col <= col2; col++) {
             if (!is_valid_position(row, col)) {
                 return FALSE;
             }
@@ -87,7 +87,7 @@ int add_walls(struct world_t *world, int row1, int col1, int row2, int col2) {
     }
 
     for (int row = row1; row <= row2; row++) {
-        for (int col = col1; col < col2; col++) {
+        for (int col = col1; col <= col2; col++) {
             world->board[row][col].entity = WALL;
         }
     }
@@ -118,7 +118,12 @@ void setup(struct world_t *world) {
     int row, col, row2, col2;
 
     while (scanf(" %c%d%d", &type, &row, &col) == 3) {
-        if (!is_valid_position(row, col)) {
+        if (type == 'W') {
+            scanf("%d%d", &row2, &col2);
+            if (!add_walls(world, row, col, row2, col2)) {
+                printf("Invalid location: feature cannot be placed here!\n");
+            }
+        } else if (!is_valid_position(row, col)) {
             printf("Invalid location: position is not on map!\n");
         } else if (world->board[row][col].entity != DIRT || (row == world->player_row && col == world->player_col)) {
             printf("Invalid location: tile is occupied!\n");
@@ -129,11 +134,6 @@ void setup(struct world_t *world) {
                 world->board[row][col].entity = BOULDER;
             } else if (type == 'g') {
                 world->board[row][col].entity = GEM;
-            } else if (type == 'W') {
-                scanf("%d%d", &row2, &col2);
-                if (!add_walls(world, row, col, row2, col2)) {
-                    printf("Invalid location: feature cannot be placed here!\n");
-                }
             }
         }
     }
