@@ -102,10 +102,50 @@ void print_map_statistics(int number_of_dirt_tiles, int number_of_gem_tiles,
         int maximum_points_remaining);
 
 // Add your function prototypes below this line
-void setup(struct world_t *world);
+int count_max_points_remain(struct world_t *world);
+int count_entities(struct world_t *world, enum entity type);
+void try_unlock(struct world_t *world);
+void get_offset(char command, int *drow, int *dcol);
+int move_player(struct world_t *world, char command);
+void print_statistics(struct world_t *world);
+int is_in(char ch, const char *chars);
+void dash_move_player(struct world_t *world, const char *input);
+void boulder_move_to(struct world_t *world, int row1, int col1, int row2,
+        int col2);
+int boulder_move(struct world_t *world);
+int spawn_player(struct world_t *world);
+int ccw(struct point_t a, struct point_t b, struct point_t c);
+int intersect(struct point_t a, struct point_t b, struct point_t c,
+        struct point_t d);
+int side_on(struct point_t a, struct point_t b, struct point_t c);
+int point_online(struct point_t a, struct point_t b, struct point_t c);
+int same_side(struct point_t a, struct point_t b, struct point_t p1,
+        struct point_t p2);
+int is_wall(struct world_t *world, int row1, int col1);
+int is_neighbor(int x1, int y1, int x2, int y2);
+void get_blocks(struct world_t *world, int x1, int y1, int x2, int y2,
+        struct stat_t *stat);
+void set_start_end(int i, struct stat_t *stat, int sub_value1, int sub_value2,
+        int sub_value3, int sub_value4, struct point_t point1,
+        struct point_t point2, struct point_t point3, struct point_t point4);
+void get_block_type(struct world_t *world, int x1, int y1, int x2, int y2,
+        struct stat_t *stat);
+int isblocked(struct world_t *world, int x1, int y1, int x2, int y2);
+void print_game_board(struct world_t *world);
+int count_neighbors(struct world_t *world, int row, int col);
+void move_lavas(struct world_t *world);
+void handler_bounder(struct world_t *world);
+void step(struct world_t *world, const char *input);
+void shift(char *buffer);
+void trim(char *input);
+void illumination(struct world_t *world);
+void set_gravity(struct world_t *world);
+void set_lava(struct world_t *world, const char *buffer);
 void game_loop(struct world_t *world);
 int is_valid_position(int row, int col);
 int add_walls(struct world_t *world, int row1, int col1, int row2, int col2);
+void setup_feature(struct world_t *world);
+void setup(struct world_t *world);
 
 // Provided sample main() function (you will need to modify this)
 int main(void) {
