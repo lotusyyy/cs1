@@ -37,6 +37,9 @@ enum entity {
 };
 
 // Add your own enums below this line
+enum lava_mode {
+    NONE, GAME, SEED
+};
 
 // Represents a tile/cell on the game board
 struct tile_t {
@@ -46,6 +49,8 @@ struct tile_t {
 // Add your own structs below this line
 struct world_t {
     struct tile_t board[ROWS][COLS];
+    int lavas[ROWS][COLS];
+
     int lives;
     int num_collectible;
     int num_collected;
@@ -65,6 +70,8 @@ struct world_t {
     int player_col_start;
 
     int last_dash;
+
+    enum lava_mode mode;
 };
 
 // Provided Function Prototypes
@@ -173,12 +180,18 @@ int move_player(struct world_t *world, char command) {
         world->player_row = nrow;
         world->player_col = ncol;
         world->score += SCORE_DIRT;
+        if (world->mode != NONE) {
+            world->score += SCORE_DIRT * 9;
+        }
         world->num_collected++;
     } else if (world->board[nrow][ncol].entity == GEM) {
         world->board[nrow][ncol].entity = EMPTY;
         world->player_row = nrow;
         world->player_col = ncol;
         world->score += SCORE_GEM;
+        if (world->mode != NONE) {
+            world->score += SCORE_GEM * 9;
+        }
         world->num_collected++;
 
         try_unlock(world);
@@ -303,7 +316,9 @@ int spawn_player(struct world_t *world) {
     int col = world->player_col_start;
     int blocked = TRUE;
 
-    if (world->board[row][col].entity == EMPTY) {
+    if (world->lavas[row][col]) {
+        printf("Respawn blocked! You're toast! Final score: %d points.\n", world->score);
+    } else if (world->board[row][col].entity == EMPTY) {
         printf("Respawning!\n");
         world->player_row = world->player_row_start;
         world->player_col = world->player_col_start;
@@ -321,7 +336,9 @@ void print_game_board(struct world_t *world) {
         for (int row = 0; row < ROWS; row++) {
             for (int col = 0; col < COLS; col++) {
                 double distance = sqrt(pow(row - world->player_row, 2) + pow(col - world->player_col, 2));
-                if (distance <= world->radius) {
+                if (world->lavas[row][col]) {
+                    board[row][col].entity = LAVA;
+                } else if (distance <= world->radius) {
                     board[row][col].entity = world->board[row][col].entity;
                 } else {
                     board[row][col].entity = HIDDEN;
@@ -335,7 +352,61 @@ void print_game_board(struct world_t *world) {
     }
 }
 
-void handler_bounder(struct world_t *world){
+int count_neighbors(struct world_t *world, int row, int col) {
+    int sum = 0;
+
+    for (int drow = -1; drow <= 1; drow++) {
+        for (int dcol = -1; dcol <= 1; dcol++) {
+            if (drow != 0 || dcol != 0) {
+                int next_row = row + drow;
+                int next_col = col + dcol;
+
+                next_row = (next_row + ROWS) % ROWS;
+                next_col = (next_col + COLS) % COLS;
+
+                if (world->lavas[next_row][next_col]) {
+                    sum++;
+                }
+            }
+        }
+    }
+
+    return sum;
+}
+
+void move_lavas(struct world_t *world) {
+    int next_lavas[ROWS][COLS];
+
+    for (int row = 0; row < ROWS; row++) {
+        for (int col = 0; col < COLS; col++) {
+            next_lavas[row][col] = world->lavas[row][col];
+            int neighbors = count_neighbors(world, row, col);
+            if (world->mode == GAME) {
+                if (!world->lavas[row][col]) {
+                    next_lavas[ROWS][COLS] = neighbors == 3;
+                } else if (neighbors < 2 || neighbors > 3) {
+                    next_lavas[ROWS][COLS] = FALSE;
+                } else {
+                    next_lavas[ROWS][COLS] = TRUE;
+                }
+            } else {
+                if (!world->lavas[row][col]) {
+                    next_lavas[ROWS][COLS] = neighbors == 2;
+                } else {
+                    next_lavas[ROWS][COLS] = FALSE;
+                }
+            }
+        }
+    }
+
+    for (int row = 0; row < ROWS; row++) {
+        for (int col = 0; col < COLS; col++) {
+            world->lavas[row][col] = next_lavas[row][col];
+        }
+    }
+}
+
+void handler_bounder(struct world_t *world) {
     int lose = boulder_move(world);
     int blocked = FALSE;
 
@@ -347,6 +418,17 @@ void handler_bounder(struct world_t *world){
             blocked = spawn_player(world);
         }
     }
+
+    if (world->lavas[world->player_row][world->player_col]) {
+        world->lives--;
+        if (world->lives == 0) {
+            world->lost = TRUE;
+        } else {
+            blocked = spawn_player(world);
+        }
+    }
+
+    move_lavas(world);
 
     if (world->lost) {
         printf("Game Lost! You scored %d points!\n", world->score);
@@ -381,15 +463,26 @@ void step(struct world_t *world, const char *input) {
     }
 
     handler_bounder(world);
+
+}
+
+void shift(char *buffer) {
+    for (int i = 1; i < 4; i++) {
+        buffer[i - 1] = buffer[i];
+    }
 }
 
 void game_loop(struct world_t *world) {
+    char buffer[5] = { 0, 0, 0, 0, 0 };
     char input[20];
 
     printf("--- Gameplay Phase ---\n");
 
     while (!world->win && !world->lost && scanf("%s", input) == 1 && input[0] != 'q') {
         char command = input[0];
+        shift(buffer);
+        buffer[3] = command;
+
         if (command == 'p') {
             printf("You have %d point(s)!\n", world->score);
         } else if (command == 'm') {
@@ -420,6 +513,15 @@ void game_loop(struct world_t *world) {
             }
 
             handler_bounder(world);
+        } else if (command == 'L') {
+            if (strcmp("wdsa", buffer) == 0) {
+                world->mode = GAME;
+                printf("Game Of Lava: Activated\n");
+            }
+            if (strcmp("wasd", buffer) == 0) {
+                world->mode = SEED;
+                printf("Lava Seeds: Activated\n");
+            }
         } else {
             step(world, input);
         }
@@ -483,6 +585,8 @@ void setup_feature(struct world_t *world) {
                 world->board[row][col].entity = GEM;
             } else if (type == 'e') {
                 world->board[row][col].entity = EXIT_LOCKED;
+            } else if (type == 'l') {
+                world->lavas[row][col] = TRUE;
             }
         }
     }
@@ -506,8 +610,15 @@ void setup(struct world_t *world) {
     world->num_collected = 0;
     world->last_dash = FALSE;
     world->gravity = 's';
+    world->mode = NONE;
 
     initialise_board(world->board);
+
+    for (int row = 0; row < ROWS; row++) {
+        for (int col = 0; col < COLS; col++) {
+            world->lavas[row][col] = FALSE;
+        }
+    }
 
     printf("--- Game Setup Phase ---\n");
     printf("Enter the player's starting position: ");
