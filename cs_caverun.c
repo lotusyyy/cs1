@@ -13,6 +13,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
+#include <math.h>
 
 // Add your own #include statements below this line
 
@@ -53,6 +54,9 @@ struct world_t {
 
     int win;
     int lost;
+
+    int illumination;
+    double radius;
 
     int score;
     int player_row;
@@ -311,6 +315,26 @@ int spawn_player(struct world_t *world) {
     return blocked;
 }
 
+void print_game_board(struct world_t *world) {
+    if (world->illumination) {
+        struct tile_t board[ROWS][COLS];
+        for (int row = 0; row < ROWS; row++) {
+            for (int col = 0; col < COLS; col++) {
+                double distance = sqrt(pow(row - world->player_row, 2) + pow(col - world->player_col, 2));
+                if (distance <= world->radius) {
+                    board[row][col].entity = world->board[row][col].entity;
+                } else {
+                    board[row][col].entity = HIDDEN;
+                }
+            }
+        }
+
+        print_board(board, world->player_row, world->player_col, world->lives);
+    } else {
+        print_board(world->board, world->player_row, world->player_col, world->lives);
+    }
+}
+
 void step(struct world_t *world, const char *input) {
     char command = input[0];
 
@@ -345,7 +369,7 @@ void step(struct world_t *world, const char *input) {
         printf("Game Lost! You scored %d points!\n", world->score);
     }
 
-    print_board(world->board, world->player_row, world->player_col, world->lives);
+    print_game_board(world);
     if (world->win) {
         printf("You Win! Final Score: %d point(s)!\n", world->score);
     }
@@ -366,6 +390,30 @@ void game_loop(struct world_t *world) {
             printf("You have %d point(s)!\n", world->score);
         } else if (command == 'm') {
             print_statistics(world);
+        } else if (command == 'i') {
+            scanf("%lf", &world->radius);
+            if (world->radius > 0) {
+                world->illumination = TRUE;
+                printf("Illumination Mode: Activated\n");
+            } else {
+                world->illumination = FALSE;
+                printf("Illumination Mode: Deactivated\n");
+            }
+            print_game_board(world);
+        } else if (command == 'g') {
+            scanf(" %c", &world->gravity);
+            if (world->gravity == 'w') {
+                printf("Gravity now pulls UP!\n");
+            }
+            if (world->gravity == 'a') {
+                printf("Gravity now pulls LEFT!\n");
+            }
+            if (world->gravity == 's') {
+                printf("Gravity now pulls DOWN!\n");
+            }
+            if (world->gravity == 'd') {
+                printf("Gravity now pulls RIGHT!\n");
+            }
         } else {
             step(world, input);
         }
@@ -444,6 +492,8 @@ void setup_feature(struct world_t *world) {
 void setup(struct world_t *world) {
     world->win = FALSE;
     world->lost = FALSE;
+    world->illumination = FALSE;
+
     world->score = 0;
     world->lives = INITIAL_LIVES;
     world->num_collectible = 0;
