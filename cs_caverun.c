@@ -57,6 +57,9 @@ void print_map_statistics(int number_of_dirt_tiles, int number_of_gem_tiles, int
 
 // Add your function prototypes below this line
 void setup(struct world_t *world);
+void game_loop(struct world_t *world);
+int is_valid_position(int row, int col);
+int add_walls(struct world_t *world, int row1, int col1, int row2, int col2);
 
 // Provided sample main() function (you will need to modify this)
 int main(void) {
@@ -64,11 +67,64 @@ int main(void) {
 
     struct world_t world;
     setup(&world);
+    game_loop(&world);
 
     return 0;
 }
 
 // Add your function definitions below this line
+void game_loop(struct world_t *world) {
+    char command;
+
+    while (scanf(" %c", &command) == 1 && command != 'q') {
+        if (command == 'w' || command == 'a' || command == 's' || command == 'd') {
+            int drow, dcol;
+            int nrow, ncol;
+
+            drow = 0;
+            dcol = 0;
+            if (command == 'w') {
+                drow = -1;
+            }
+            if (command == 's') {
+                drow = 1;
+            }
+            if (command == 'a') {
+                dcol = -1;
+            }
+            if (command == 'd') {
+                dcol = 1;
+            }
+
+            nrow = world->player_row + drow;
+            ncol = world->player_col + dcol;
+            int moved = FALSE;
+
+            if (!is_valid_position(nrow, ncol)) {
+
+            } else if (world->board[nrow][ncol].entity == DIRT) {
+                world->board[nrow][ncol].entity = EMPTY;
+                world->player_row = nrow;
+                world->player_col = ncol;
+                moved = TRUE;
+            } else if (world->board[nrow][ncol].entity == BOULDER || world->board[nrow][ncol].entity == WALL) {
+
+            }
+
+            if (moved) {
+                print_board(world->board, world->player_row, world->player_col, world->lives);
+            }
+        } else if (command == 'r') {
+
+        }
+    }
+
+    if (command == 'q') {
+        printf("--- Quitting Game ---\n");
+    }
+
+}
+
 int is_valid_position(int row, int col) {
     return row >= 0 && row < ROWS && col >= 0 && col < COLS;
 }
@@ -117,7 +173,9 @@ void setup(struct world_t *world) {
     char type;
     int row, col, row2, col2;
 
-    while (scanf(" %c%d%d", &type, &row, &col) == 3) {
+    while (scanf(" %c", &type) == 1 && type != 's') {
+        scanf("%d%d", &row, &col);
+
         if (type == 'W') {
             scanf("%d%d", &row2, &col2);
             if (!add_walls(world, row, col, row2, col2)) {
@@ -138,6 +196,9 @@ void setup(struct world_t *world) {
         }
     }
     print_board(world->board, world->player_row, world->player_col, world->lives);
+    world->board[world->player_row][world->player_col].entity = EMPTY;
+
+    printf("--- Gameplay Phase ---\n");
 }
 
 // =============================================================================
