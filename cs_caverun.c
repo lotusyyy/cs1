@@ -20,6 +20,8 @@
 #define INVALID_ROW -1
 #define INVALID_COL -1
 #define INITIAL_LIVES 3
+#define SCORE_DIRT 1
+#define SCORE_GEM 20
 
 // Add your own #defines constants below this line
 #define TRUE 1
@@ -42,7 +44,10 @@ struct tile_t {
 struct world_t {
     struct tile_t board[ROWS][COLS];
     int lives;
+    int num_collectible;
+    int num_collected;
 
+    int score;
     int player_row;
     int player_col;
 };
@@ -73,8 +78,25 @@ int main(void) {
 }
 
 // Add your function definitions below this line
+int count_max_points_remain(struct world_t *world) {
+    int sum = 0;
+
+    for (int row = 0; row < ROWS; row++) {
+        for (int col = 0; col < COLS; col++) {
+            if (world->board[row][col].entity == DIRT) {
+                sum += SCORE_DIRT;
+            }
+            if (world->board[row][col].entity == GEM) {
+                sum += SCORE_GEM;
+            }
+        }
+    }
+
+    return sum;
+}
+
 void game_loop(struct world_t *world) {
-    char command;
+    char command = 0;
 
     while (scanf(" %c", &command) == 1 && command != 'q') {
         if (command == 'w' || command == 'a' || command == 's' || command == 'd') {
@@ -107,6 +129,14 @@ void game_loop(struct world_t *world) {
                 world->board[nrow][ncol].entity = EMPTY;
                 world->player_row = nrow;
                 world->player_col = ncol;
+                world->score += SCORE_DIRT;
+                world->num_collected++;
+            } else if (world->board[nrow][ncol].entity == GEM) {
+                world->board[nrow][ncol].entity = EMPTY;
+                world->player_row = nrow;
+                world->player_col = ncol;
+                world->score += SCORE_GEM;
+                world->num_collected++;
             } else {
                 world->player_row = nrow;
                 world->player_col = ncol;
@@ -115,6 +145,34 @@ void game_loop(struct world_t *world) {
             print_board(world->board, world->player_row, world->player_col, world->lives);
         } else if (command == 'r') {
             print_board(world->board, world->player_row, world->player_col, world->lives);
+        } else if (command == 'p') {
+            printf("You have %d point(s)!\n", world->score);
+        } else if (command == 'm') {
+            int number_of_dirt_tiles = 0;
+            int number_of_gem_tiles = 0;
+            int number_of_boulder_tiles = 0;
+            double completion_percentage = 0;
+            int maximum_points_remaining = 0;
+
+            for (int row = 0; row < ROWS; row++) {
+                for (int col = 0; col < COLS; col++) {
+                    if (world->board[row][col].entity == DIRT) {
+                        number_of_dirt_tiles++;
+                        maximum_points_remaining += SCORE_DIRT;
+                    }
+                    if (world->board[row][col].entity == GEM) {
+                        maximum_points_remaining += SCORE_GEM;
+                        number_of_gem_tiles++;
+                    }
+                    if (world->board[row][col].entity == BOULDER) {
+                        number_of_boulder_tiles++;
+                    }
+                }
+            }
+
+            completion_percentage = 100.0 * world->num_collected / world->num_collectible;
+            print_map_statistics(number_of_dirt_tiles, number_of_gem_tiles, number_of_boulder_tiles,
+                    completion_percentage, maximum_points_remaining);
         }
     }
 
@@ -151,7 +209,11 @@ int add_walls(struct world_t *world, int row1, int col1, int row2, int col2) {
 }
 
 void setup(struct world_t *world) {
+    world->score = 0;
     world->lives = INITIAL_LIVES;
+    world->num_collectible = 0;
+    world->num_collected = 0;
+
     initialise_board(world->board);
 
     printf("--- Game Setup Phase ---\n");
@@ -196,6 +258,17 @@ void setup(struct world_t *world) {
     }
     print_board(world->board, world->player_row, world->player_col, world->lives);
     world->board[world->player_row][world->player_col].entity = EMPTY;
+
+    for (int row = 0; row < ROWS; row++) {
+        for (int col = 0; col < COLS; col++) {
+            if (world->board[row][col].entity == DIRT) {
+                world->num_collectible++;
+            }
+            if (world->board[row][col].entity == GEM) {
+                world->num_collectible++;
+            }
+        }
+    }
 
     printf("--- Gameplay Phase ---\n");
 }
