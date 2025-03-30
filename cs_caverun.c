@@ -423,7 +423,7 @@ int isblocked(struct world_t *world, int x1, int y1, int x2, int y2) {
         int sum2 = s1 + s2 + s3 + s4;
 
         if (sum1 == 1 && sum2 != 2) {
-            //printf("%d %d %d %d %d %d %d\n", y2, x2, sum2, s1, s2, s3, s4);
+            // printf("%d %d %d %d %d %d %d\n", y2, x2, sum2, s1, s2, s3, s4);
             types[i] = 2;
             count++;
         }
