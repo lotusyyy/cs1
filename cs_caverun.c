@@ -420,38 +420,60 @@ void get_blocks(struct world_t *world, int x1, int y1, int x2, int y2,
 
     for (int row = 0; row < ROWS; row++)
         for (int col = 0; col < COLS; col++) {
-            if ((world->board[row][col].entity == WALL
-                    || world->board[row][col].entity == BOULDER
-                    || world->board[row][col].entity == GEM)
-                    && !(row == y2 && col == x2)) {
-                double x = col;
-                double y = row;
+        if ((world->board[row][col].entity == WALL
+                || world->board[row][col].entity == BOULDER
+                || world->board[row][col].entity == GEM)
+                && !(row == y2 && col == x2)) {
+            double x = col;
+            double y = row;
 
-                struct point_t var_p1 = {
-                    x - 0.51, y - 0.51
-                };
-                struct point_t var_p2 = {
-                    x + 0.51, y - 0.51
-                };
-                struct point_t var_p3 = {
-                    x + 0.51, y + 0.51
+            struct point_t var_p1 = {
+                x - 0.51, y - 0.51
+            };
+            struct point_t var_p2 = {
+                x + 0.51, y - 0.51
+            };
+            struct point_t var_p3 = {
+                x + 0.51, y + 0.51
 
-                };
-                struct point_t var_p4 = {
-                    x - 0.51, y + 0.51
-                };
+            };
+            struct point_t var_p4 = {
+                x - 0.51, y + 0.51
+            };
 
-                if (intersect(point_a, point_b, var_p1, var_p2)
-                        || intersect(point_a, point_b, var_p2, var_p3)
-                        || intersect(point_a, point_b, var_p3, var_p4)
-                        || intersect(point_a, point_b, var_p4, var_p1)) {
-                    stat->rows[stat->num] = row;
-                    stat->cols[stat->num] = col;
-                    stat->types[stat->num] = 0;
-                    stat->num++;
-                }
+            if (intersect(point_a, point_b, var_p1, var_p2)
+                    || intersect(point_a, point_b, var_p2, var_p3)
+                    || intersect(point_a, point_b, var_p3, var_p4)
+                    || intersect(point_a, point_b, var_p4, var_p1)) {
+                stat->rows[stat->num] = row;
+                stat->cols[stat->num] = col;
+                stat->types[stat->num] = 0;
+                stat->num++;
             }
         }
+    }
+}
+
+void set_start_end(int i, struct stat_t *stat, int sub_value1, int sub_value2,
+        int sub_value3, int sub_value4, struct point_t point1,
+        struct point_t point2, struct point_t point3, struct point_t point4) {
+    stat->types[i] = 1;
+    if (sub_value1) {
+        stat->start[i] = point1;
+        stat->end[i] = point2;
+    }
+    if (sub_value2) {
+        stat->start[i] = point2;
+        stat->end[i] = point3;
+    }
+    if (sub_value3) {
+        stat->start[i] = point3;
+        stat->end[i] = point4;
+    }
+    if (sub_value4) {
+        stat->start[i] = point4;
+        stat->end[i] = point1;
+    }
 }
 
 void get_block_type(struct world_t *world, int x1, int y1, int x2, int y2,
@@ -462,11 +484,9 @@ void get_block_type(struct world_t *world, int x1, int y1, int x2, int y2,
     struct point_t point_b = {
         x2, y2
     };
-
     for (int i = 0; i < stat->num; i++) {
         double x = stat->cols[i];
         double y = stat->rows[i];
-
         struct point_t point1 = {
             x - 0.5, y - 0.5
         };
@@ -479,37 +499,19 @@ void get_block_type(struct world_t *world, int x1, int y1, int x2, int y2,
         struct point_t point4 = {
             x - 0.5, y + 0.5
         };
-
         int sub_value1 = point_online(point_a, point_b, point1);
         int sub_value2 = point_online(point_a, point_b, point2);
         int sub_value3 = point_online(point_a, point_b, point3);
         int sub_value4 = point_online(point_a, point_b, point4);
         int sum1 = sub_value1 + sub_value2 + sub_value3 + sub_value4;
-
         sub_value1 = same_side(point_a, point_b, point1, point2);
         sub_value2 = same_side(point_a, point_b, point2, point3);
         sub_value3 = same_side(point_a, point_b, point3, point4);
         sub_value4 = same_side(point_a, point_b, point4, point1);
         int sum2 = sub_value1 + sub_value2 + sub_value3 + sub_value4;
-
         if (sum1 == 1 && sum2 == 2) {
-            stat->types[i] = 1;
-            if (sub_value1) {
-                stat->start[i] = point1;
-                stat->end[i] = point2;
-            }
-            if (sub_value2) {
-                stat->start[i] = point2;
-                stat->end[i] = point3;
-            }
-            if (sub_value3) {
-                stat->start[i] = point3;
-                stat->end[i] = point4;
-            }
-            if (sub_value4) {
-                stat->start[i] = point4;
-                stat->end[i] = point1;
-            }
+            set_start_end(i, stat, sub_value1, sub_value2, sub_value3,
+                    sub_value4, point1, point2, point3, point4);
         }
     }
 }
