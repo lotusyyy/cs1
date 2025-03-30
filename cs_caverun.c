@@ -688,6 +688,7 @@ void game_loop(struct world_t *world) {
 
     printf("--- Gameplay Phase ---\n");
 
+    fgets(input, 50, stdin);
     while (!world->win && !world->lost && fgets(input, 50, stdin)
             && input[0] != 'q') {
         trim(input);
