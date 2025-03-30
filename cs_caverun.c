@@ -269,7 +269,7 @@ void game_loop(struct world_t *world) {
         }
     }
 
-    if (strcmp("q", input)) {
+    if (strcmp("q", input) == 0) {
         printf("--- Quitting Game ---\n");
     }
 }
