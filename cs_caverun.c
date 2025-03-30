@@ -310,6 +310,7 @@ void setup(struct world_t *world) {
     print_board(world->board, world->player_row, world->player_col, world->lives);
 
     setup_feature(world);
+    try_unlock(world);
 }
 
 // =============================================================================
