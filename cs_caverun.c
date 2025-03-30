@@ -348,6 +348,10 @@ int intersect(struct point_t a, struct point_t b, struct point_t c, struct point
     return ccw(a, c, d) != ccw(b, c, d) && ccw(a, b, c) != ccw(a, b, d);
 }
 
+int intersect2(struct point_t a, struct point_t b, struct point_t c, struct point_t d) {
+    return (b.y - a.y) / (b.x - a.x) == (c.y - a.y) / (d.x - a.x);
+}
+
 int isblocked(struct world_t *world, int x1, int y1, int x2, int y2) {
     struct point_t a = { x1, y1 };
     struct point_t b = { x2, y2 };
@@ -390,7 +394,9 @@ int isblocked(struct world_t *world, int x1, int y1, int x2, int y2) {
         struct point_t p3 = { x + 0.5, y + 0.5 };
         struct point_t p4 = { x - 0.5, y + 0.5 };
 
-        if (intersect(a, b, p1, p1) || intersect(a, b, p2, p2) || intersect(a, b, p3, p3) || intersect(a, b, p4, p4)) {
+        if (intersect2(a, b, p1, p1) || intersect2(a, b, p2, p2) || intersect2(a, b, p3, p3)
+                || intersect2(a, b, p4, p4)) {
+
             types[i] = 2;
             count++;
         }
