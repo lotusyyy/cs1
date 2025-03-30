@@ -338,6 +338,7 @@ void print_game_board(struct world_t *world) {
             double distance = sqrt(pow(row - world->player_row, 2) + pow(col - world->player_col, 2));
             if (world->lavas[row][col]) {
                 board[row][col].entity = LAVA;
+                printf("%d %d is lava\n", row, col);
             } else if (distance <= world->radius) {
                 board[row][col].entity = world->board[row][col].entity;
             } else if (world->illumination) {
@@ -388,7 +389,7 @@ void move_lavas(struct world_t *world) {
                 } else {
                     next_lavas[row][col] = TRUE;
                 }
-            } else {
+            } else if (world->mode == SEED) {
                 if (!world->lavas[row][col]) {
                     next_lavas[row][col] = neighbors == 2;
                 } else {
@@ -462,7 +463,6 @@ void step(struct world_t *world, const char *input) {
     }
 
     handler_bounder(world);
-
 }
 
 void shift(char *buffer) {
