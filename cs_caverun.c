@@ -11,6 +11,8 @@
 
 // Provided Libraries
 #include <stdio.h>
+#include <string.h>
+#include <stdlib.h>
 
 // Add your own #include statements below this line
 
@@ -122,7 +124,7 @@ void try_unlock(struct world_t *world) {
     }
 }
 
-void move_player(struct world_t *world, char command) {
+int move_player(struct world_t *world, char command) {
     int drow, dcol;
     int nrow, ncol;
 
@@ -146,9 +148,11 @@ void move_player(struct world_t *world, char command) {
 
     if (!is_valid_position(nrow, ncol)) {
 
+        return TRUE;
     } else if (world->board[nrow][ncol].entity == BOULDER || world->board[nrow][ncol].entity == WALL
             || world->board[nrow][ncol].entity == EXIT_LOCKED) {
 
+        return TRUE;
     } else if (world->board[nrow][ncol].entity == DIRT) {
         world->board[nrow][ncol].entity = EMPTY;
         world->player_row = nrow;
@@ -168,7 +172,10 @@ void move_player(struct world_t *world, char command) {
         world->player_col = ncol;
     }
 
-    print_board(world->board, world->player_row, world->player_col, world->lives);
+    if (world->board[world->player_row][world->player_col].entity == EXIT_UNLOCKED) {
+        world->win = TRUE;
+    }
+    return FALSE;
 }
 
 void print_statistics(struct world_t *world) {
@@ -199,29 +206,70 @@ void print_statistics(struct world_t *world) {
             maximum_points_remaining);
 }
 
+int is_in(char ch, const char *chars) {
+    int len = strlen(chars);
+    for (int i = 0; i < len; i++) {
+        if (chars[i] == ch) {
+            return TRUE;
+        }
+    }
+    return FALSE;
+}
+
+void dash_move_player(struct world_t *world, const char *input) {
+    char command = input[0];
+    char command2 = input[1];
+    command += 'a' - 'A';
+    command2 += 'a' - 'A';
+
+    if (!move_player(world, command)) {
+        if (!world->win) {
+            move_player(world, command2);
+        }
+    }
+
+    print_board(world->board, world->player_row, world->player_col, world->lives);
+    if (world->win) {
+        printf("You Win! Final Score: %d point(s)!\n", world->score);
+    }
+}
+
 void game_loop(struct world_t *world) {
-    char command = 0;
+    char input[20];
+    int last_dash = FALSE;
 
     printf("--- Gameplay Phase ---\n");
 
-    while (scanf(" %c", &command) == 1 && command != 'q' && !world->win) {
-        if (command == 'w' || command == 'a' || command == 's' || command == 'd') {
-            move_player(world, command);
+    while (scanf("%s", input) == 1 && input[0] != 'q' && !world->win) {
+        char command = input[0];
 
-            if (world->board[world->player_row][world->player_col].entity == EXIT_UNLOCKED) {
+        if (command == 'w' || command == 'a' || command == 's' || command == 'd') {
+            last_dash = FALSE;
+
+            move_player(world, command);
+            print_board(world->board, world->player_row, world->player_col, world->lives);
+            if (world->win) {
                 printf("You Win! Final Score: %d point(s)!\n", world->score);
-                world->win = TRUE;
             }
+
         } else if (command == 'r') {
             print_board(world->board, world->player_row, world->player_col, world->lives);
         } else if (command == 'p') {
             printf("You have %d point(s)!\n", world->score);
         } else if (command == 'm') {
             print_statistics(world);
+        } else if (strlen(input) == 2 && is_in(input[0], "WASD") && is_in(input[1], "WASD")) {
+            if (last_dash) {
+                printf("You're out of breath! Skipping dash move...\n");
+                print_board(world->board, world->player_row, world->player_col, world->lives);
+            } else {
+                dash_move_player(world, input);
+                last_dash = TRUE;
+            }
         }
     }
 
-    if (command == 'q') {
+    if (strcmp("q", input)) {
         printf("--- Quitting Game ---\n");
     }
 }
@@ -312,8 +360,6 @@ void setup(struct world_t *world) {
     print_board(world->board, world->player_row, world->player_col, world->lives);
 
     setup_feature(world);
-
-
 
 }
 
